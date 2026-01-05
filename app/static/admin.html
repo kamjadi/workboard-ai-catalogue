@@ -292,6 +292,7 @@
                             type="number"
                             value={formData.impact1_value || ''}
                             onChange={(e) => handleChange('impact1_value', parseFloat(e.target.value) || '')}
+                            onKeyDown={(e) => { if (e.key === 'Enter' && !saving) handleSave(); }}
                             className="w-full bg-white border border-gray-300 rounded-lg px-4 py-2.5 text-gray-900 focus:outline-none focus:ring-2"
                           />
                         </div>
@@ -318,6 +319,7 @@
                             type="number"
                             value={formData.impact1_annual_value || ''}
                             onChange={(e) => handleChange('impact1_annual_value', parseFloat(e.target.value) || '')}
+                            onKeyDown={(e) => { if (e.key === 'Enter' && !saving) handleSave(); }}
                             className="w-full bg-white border border-gray-300 rounded-lg px-4 py-2.5 text-gray-900 focus:outline-none focus:ring-2"
                           />
                         </div>
@@ -330,6 +332,7 @@
                           type="text"
                           value={formData.impact1_description || ''}
                           onChange={(e) => handleChange('impact1_description', e.target.value)}
+                          onKeyDown={(e) => { if (e.key === 'Enter' && !saving) handleSave(); }}
                           className="w-full bg-white border border-gray-300 rounded-lg px-4 py-2.5 text-gray-900 focus:outline-none focus:ring-2"
                         />
                       </div>
