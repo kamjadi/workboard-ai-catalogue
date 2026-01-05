@@ -279,6 +279,8 @@
       });
       const [selectedTools, setSelectedTools] = useState({});
       const [otherToolNames, setOtherToolNames] = useState({});
+      const [selectedCapability, setSelectedCapability] = useState(null);
+      const [otherCapabilityName, setOtherCapabilityName] = useState('');
       const [primaryImpact, setPrimaryImpact] = useState({ type: '' });
       const [secondaryImpact, setSecondaryImpact] = useState({ type: '' });
       const [tertiaryImpact, setTertiaryImpact] = useState({ type: '' });
@@ -364,13 +366,51 @@
           const selectedTeam = teamsForFunction.length > 0
             ? apiConfig.teams.find(t => t.name === formData.team && t.function_id === selectedFunc?.id)
             : null;
-          const selectedCapability = apiConfig.capabilities.find(c => c.name === formData.aiCapability);
 
-          if (!selectedFunc || !selectedCapability) {
-            throw new Error('Please select valid function and capability');
+          if (!selectedFunc) {
+            throw new Error('Please select a valid function');
           }
           if (teamsForFunction.length > 0 && !selectedTeam) {
             throw new Error('Please select a team');
+          }
+          if (!selectedCapability) {
+            throw new Error('Please select an AI capability');
+          }
+
+          // Handle capability - check if "Other" was selected
+          let finalCapabilityId = selectedCapability;
+          const selectedCap = apiConfig.capabilities.find(c => c.id === selectedCapability);
+
+          if (selectedCap && selectedCap.name.toLowerCase() === 'other') {
+            const capName = otherCapabilityName?.trim();
+            if (!capName) {
+              throw new Error('Please enter a name for the "Other" capability');
+            }
+
+            // Check if capability already exists (case-insensitive)
+            const existingCap = apiConfig.capabilities.find(c =>
+              c.name.toLowerCase() === capName.toLowerCase() && c.name.toLowerCase() !== 'other'
+            );
+
+            if (existingCap) {
+              // Capability already exists, use its ID
+              finalCapabilityId = existingCap.id;
+            } else {
+              // Create new capability
+              const createCapRes = await fetch('/api/config/capabilities', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ name: capName })
+              });
+
+              if (!createCapRes.ok) {
+                const errData = await createCapRes.json();
+                throw new Error(errData.detail || 'Failed to create capability: ' + capName);
+              }
+
+              const newCap = await createCapRes.json();
+              finalCapabilityId = newCap.id;
+            }
           }
 
           // Check for "Other" tools that need to be created
@@ -438,8 +478,8 @@
             function_id: selectedFunc.id,
             team_id: selectedTeam ? selectedTeam.id : null,
             method_type: formData.aiMethodType,
-            capability_id: selectedCapability.id,
-            capability_other: formData.aiCapability === 'Other' ? formData.aiCapabilityOther : null,
+            capability_id: finalCapabilityId,
+            capability_other: null, // No longer needed since we create capabilities
             description: formData.description,
             tools_used: JSON.stringify(toolIds),
             other_tools: JSON.stringify([]), // No longer needed since we create tools
@@ -485,7 +525,7 @@
               </div>
               <h2 className="text-2xl font-bold text-gray-900 mb-2">Thank You!</h2>
               <p className="text-gray-600 mb-6">Your AI usage has been recorded successfully.</p>
-              <button onClick={() => { setSubmitted(false); setFormData({ function: '', functionOther: '', team: '', teamOther: '', aiMethodType: '', aiCapability: '', aiCapabilityOther: '', description: '' }); setSelectedTools({}); setOtherToolNames({}); setPrimaryImpact({ type: '' }); setSecondaryImpact({ type: '' }); setTertiaryImpact({ type: '' }); setQuaternaryImpact({ type: '' }); }} className="px-6 py-3 rounded-xl font-semibold text-white transition-all" style={{ backgroundColor: COLORS.primary }}>
+              <button onClick={() => { setSubmitted(false); setFormData({ function: '', functionOther: '', team: '', teamOther: '', aiMethodType: '', aiCapability: '', aiCapabilityOther: '', description: '' }); setSelectedTools({}); setOtherToolNames({}); setSelectedCapability(null); setOtherCapabilityName(''); setPrimaryImpact({ type: '' }); setSecondaryImpact({ type: '' }); setTertiaryImpact({ type: '' }); setQuaternaryImpact({ type: '' }); }} className="px-6 py-3 rounded-xl font-semibold text-white transition-all" style={{ backgroundColor: COLORS.primary }}>
                 Submit Another
               </button>
             </div>
@@ -607,14 +647,32 @@
                   </div>
                   <div className="space-y-2">
                     <label className="block text-sm font-medium text-gray-700">AI Capability Category <span className="text-red-500">*</span></label>
-                    <div className="relative">
-                      <select value={formData.aiCapability} onChange={(e) => handleFormChange('aiCapability', e.target.value)} className="w-full appearance-none bg-white border border-gray-300 rounded-lg px-4 py-3 text-gray-900 focus:outline-none focus:ring-2 cursor-pointer" required>
-                        <option value="">Select AI capability...</option>
-                        {(apiConfig?.capabilities || []).map(cap => <option key={cap.id} value={cap.name}>{cap.name}</option>)}
-                      </select>
-                      <ChevronDown className="absolute right-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400 pointer-events-none" />
+                    <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3">
+                      {(apiConfig?.capabilities || []).map((cap) => {
+                        const isOtherCapability = cap.name.toLowerCase() === 'other';
+                        const isSelected = selectedCapability === cap.id;
+                        return (
+                          <div key={cap.id} className="space-y-2">
+                            <button type="button" onClick={() => setSelectedCapability(cap.id)} className={`w-full flex items-center justify-center gap-2 px-3 py-3 rounded-xl border-2 transition-all text-center ${isSelected ? '' : 'border-gray-200 hover:border-gray-300'}`} style={isSelected ? { borderColor: COLORS.primary, backgroundColor: COLORS.primary + '10' } : {}}>
+                              <div className={`w-4 h-4 rounded flex items-center justify-center border-2 flex-shrink-0 ${isSelected ? '' : 'border-gray-300'}`} style={isSelected ? { backgroundColor: COLORS.primary, borderColor: COLORS.primary } : {}}>
+                                {isSelected && <Check className="w-2.5 h-2.5 text-white" />}
+                              </div>
+                              <span className="font-medium text-gray-700 text-sm">{cap.name}</span>
+                            </button>
+                            {isOtherCapability && isSelected && (
+                              <input
+                                type="text"
+                                value={otherCapabilityName}
+                                onChange={(e) => setOtherCapabilityName(e.target.value)}
+                                placeholder="Enter capability name (required)..."
+                                className="w-full bg-white border border-gray-300 rounded-lg px-3 py-2 text-gray-900 text-sm"
+                                required
+                              />
+                            )}
+                          </div>
+                        );
+                      })}
                     </div>
-                    {formData.aiCapability === 'other' && <input type="text" value={formData.aiCapabilityOther} onChange={(e) => handleFormChange('aiCapabilityOther', e.target.value)} placeholder="Describe the AI capability..." className="w-full mt-2 bg-white border border-gray-300 rounded-lg px-4 py-3 text-gray-900" required />}
                   </div>
                   <div className="space-y-2">
                     <label className="block text-sm font-medium text-gray-700">Description <span className="text-red-500">*</span></label>

@@ -169,7 +169,7 @@ def seed_sample_data():
         cursor.execute("INSERT OR IGNORE INTO tools (name) VALUES (?)", (tool,))
 
     # Sample capabilities
-    capabilities = ["Drafting", "Summarizing", "Analyzing", "Q&A", "Coding", "Automation", "Classifying", "Vibe Coding"]
+    capabilities = ["Drafting", "Summarizing", "Analyzing", "Q&A", "Coding", "Automation", "Classifying", "Vibe Coding", "Other"]
     for name in capabilities:
         cursor.execute("INSERT OR IGNORE INTO capabilities (name) VALUES (?)", (name,))
 
