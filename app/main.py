@@ -1,6 +1,7 @@
 from fastapi import FastAPI
 from fastapi.staticfiles import StaticFiles
 from fastapi.responses import FileResponse
+import os
 from fastapi.middleware.cors import CORSMiddleware
 from pathlib import Path
 
@@ -77,6 +78,21 @@ async def config_page():
 async def health_check():
     """Health check endpoint."""
     return {"status": "healthy", "database": str(DATABASE_PATH)}
+
+
+# Version endpoint
+@app.get("/api/version")
+async def get_version():
+    """Return version info to verify deployment."""
+    return {
+        "version": "1.1.0",
+        "build": "2024-01-04-capabilities-checkboxes",
+        "features": [
+            "AI Capabilities as checkboxes",
+            "Auto-create capabilities from Other",
+            "Auto-create tools from Other"
+        ]
+    }
 
 
 # Startup event
