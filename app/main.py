@@ -11,7 +11,7 @@ from .routes import config_router, responses_router
 # Initialize FastAPI app
 app = FastAPI(
     title="AI Usage Tracker",
-    description="WorkBoard Internal AI Usage and Impact Catalogue",
+    description="WorkBoard Internal AI Usage and Impact Catalog",
     version="1.0.0"
 )
 

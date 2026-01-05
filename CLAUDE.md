@@ -2,7 +2,7 @@
 
 ## Project Overview
 
-**Project Name:** WorkBoard Internal AI Usage and Impact Catalogue  
+**Project Name:** WorkBoard Internal AI Usage and Impact Catalog  
 **Goal:** Track AI adoption across teams and measure business impact  
 **Status:** UI prototypes complete, need to build full-stack application
 

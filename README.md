@@ -1,6 +1,6 @@
 # AI Usage Tracker
 
-WorkBoard's Internal AI Usage and Impact Catalogue
+WorkBoard's Internal AI Usage and Impact Catalog
 
 ## Quick Start with Claude Code
 
