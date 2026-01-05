@@ -174,14 +174,39 @@
         setSaving(true);
         setError(null);
         try {
+          // Clean up formData - convert empty strings to null for optional fields
+          const cleanedData = { ...formData };
+          ['impact1_type', 'impact1_value', 'impact1_frequency', 'impact1_annual_value', 'impact1_description',
+           'impact2_type', 'impact2_value', 'impact2_frequency', 'impact2_annual_value', 'impact2_description',
+           'impact3_type', 'impact3_value', 'impact3_frequency', 'impact3_annual_value', 'impact3_description',
+           'impact4_type', 'impact4_value', 'impact4_frequency', 'impact4_annual_value', 'impact4_description'
+          ].forEach(field => {
+            if (cleanedData[field] === '' || cleanedData[field] === undefined) {
+              cleanedData[field] = null;
+            }
+          });
+          // Also clean team_id if empty
+          if (cleanedData.team_id === '' || cleanedData.team_id === undefined) {
+            cleanedData.team_id = null;
+          }
+
           const response = await fetch(`/api/responses/${entry.id}`, {
             method: 'PUT',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(formData)
+            body: JSON.stringify(cleanedData)
           });
           if (!response.ok) {
             const errData = await response.json();
-            throw new Error(errData.detail || 'Failed to update');
+            // Handle Pydantic validation errors (detail is an array)
+            let errorMsg = 'Failed to update';
+            if (errData.detail) {
+              if (Array.isArray(errData.detail)) {
+                errorMsg = errData.detail.map(e => e.msg || e.message || JSON.stringify(e)).join(', ');
+              } else {
+                errorMsg = errData.detail;
+              }
+            }
+            throw new Error(errorMsg);
           }
           onSave();
         } catch (err) {

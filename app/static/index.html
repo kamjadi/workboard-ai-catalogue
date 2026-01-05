@@ -68,6 +68,8 @@
     const Settings = ({ className }) => <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>;
     const Sliders = ({ className }) => <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><line x1="4" y1="21" x2="4" y2="14"/><line x1="4" y1="10" x2="4" y2="3"/><line x1="12" y1="21" x2="12" y2="12"/><line x1="12" y1="8" x2="12" y2="3"/><line x1="20" y1="21" x2="20" y2="16"/><line x1="20" y1="12" x2="20" y2="3"/><line x1="1" y1="14" x2="7" y2="14"/><line x1="9" y1="8" x2="15" y2="8"/><line x1="17" y1="16" x2="23" y2="16"/></svg>;
     const Info = ({ className }) => <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg>;
+    const X = ({ className }) => <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>;
+    const Check = ({ className }) => <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><polyline points="20 6 9 17 4 12"/></svg>;
 
     const TODAY_DATE = new Date().toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
 
@@ -87,6 +89,121 @@
     };
 
     // Sample Data
+    // Sample detailed methods data for modal view
+    const SAMPLE_METHODS = {
+      'Sales': {
+        workflows: [
+          { id: 1, capability: 'Summarizing', description: 'Automatically summarize sales calls from Gong and create follow-up emails', costSavings: 45000, timeSavings: 320, quality: true, newCapability: false },
+          { id: 2, capability: 'Drafting', description: 'Generate personalized outreach sequences based on prospect research', costSavings: 38000, timeSavings: 280, quality: false, newCapability: true },
+          { id: 3, capability: 'Analyzing', description: 'Analyze deal pipeline and predict close probabilities', costSavings: 52000, timeSavings: 0, quality: true, newCapability: true },
+          { id: 4, capability: 'Q&A', description: 'Answer product questions using knowledge base during calls', costSavings: 0, timeSavings: 420, quality: true, newCapability: false },
+          { id: 5, capability: 'Automation', description: 'Auto-update CRM fields after customer meetings', costSavings: 28000, timeSavings: 380, quality: false, newCapability: false },
+          { id: 6, capability: 'Drafting', description: 'Create proposal documents from templates and meeting notes', costSavings: 35000, timeSavings: 290, quality: true, newCapability: false },
+          { id: 7, capability: 'Summarizing', description: 'Weekly deal review summaries for leadership', costSavings: 22000, timeSavings: 150, quality: false, newCapability: false },
+          { id: 8, capability: 'Analyzing', description: 'Competitive analysis reports from web research', costSavings: 41000, timeSavings: 0, quality: true, newCapability: true },
+          { id: 9, capability: 'Drafting', description: 'Generate custom pricing proposals', costSavings: 32000, timeSavings: 220, quality: false, newCapability: false },
+          { id: 10, capability: 'Q&A', description: 'Real-time objection handling suggestions', costSavings: 0, timeSavings: 180, quality: true, newCapability: true },
+          { id: 11, capability: 'Automation', description: 'Automated meeting scheduling and prep docs', costSavings: 25000, timeSavings: 340, quality: false, newCapability: false },
+          { id: 12, capability: 'Summarizing', description: 'Customer health score analysis and alerts', costSavings: 48000, timeSavings: 0, quality: true, newCapability: false }
+        ],
+        tasks: [
+          { id: 13, capability: 'Drafting', description: 'Write cold outreach emails', costSavings: 8000, timeSavings: 45, quality: false, newCapability: false },
+          { id: 14, capability: 'Summarizing', description: 'Summarize long email threads', costSavings: 0, timeSavings: 120, quality: false, newCapability: false },
+          { id: 15, capability: 'Q&A', description: 'Research prospect companies', costSavings: 12000, timeSavings: 85, quality: true, newCapability: false },
+          { id: 16, capability: 'Drafting', description: 'Create LinkedIn connection messages', costSavings: 5000, timeSavings: 60, quality: false, newCapability: false },
+          { id: 17, capability: 'Analyzing', description: 'Score leads based on engagement', costSavings: 15000, timeSavings: 0, quality: true, newCapability: false }
+        ],
+        experiments: [
+          { id: 18, capability: 'Vibe Coding', description: 'Testing AI-generated demo scripts', costSavings: 0, timeSavings: 0, quality: false, newCapability: false },
+          { id: 19, capability: 'Deep Research', description: 'Exploring market trend analysis tools', costSavings: 0, timeSavings: 0, quality: false, newCapability: false }
+        ]
+      },
+      'Marketing': {
+        workflows: [
+          { id: 20, capability: 'Drafting', description: 'Generate blog posts and social media content calendar', costSavings: 42000, timeSavings: 380, quality: true, newCapability: false },
+          { id: 21, capability: 'Analyzing', description: 'Campaign performance analysis and optimization recommendations', costSavings: 35000, timeSavings: 0, quality: true, newCapability: true },
+          { id: 22, capability: 'Automation', description: 'Automated A/B test analysis and winner selection', costSavings: 28000, timeSavings: 220, quality: false, newCapability: false }
+        ],
+        tasks: [
+          { id: 23, capability: 'Drafting', description: 'Write email subject lines', costSavings: 8000, timeSavings: 45, quality: false, newCapability: false },
+          { id: 24, capability: 'Summarizing', description: 'Create executive summaries of reports', costSavings: 0, timeSavings: 90, quality: true, newCapability: false }
+        ],
+        experiments: [
+          { id: 25, capability: 'Coding', description: 'Testing AI image generation for ads', costSavings: 0, timeSavings: 0, quality: false, newCapability: false }
+        ]
+      },
+      'Engineering': {
+        workflows: [
+          { id: 26, capability: 'Coding', description: 'Code review automation with AI suggestions', costSavings: 65000, timeSavings: 520, quality: true, newCapability: false },
+          { id: 27, capability: 'Automation', description: 'Automated bug triage and assignment', costSavings: 45000, timeSavings: 380, quality: true, newCapability: true }
+        ],
+        tasks: [
+          { id: 28, capability: 'Coding', description: 'Generate unit tests', costSavings: 18000, timeSavings: 150, quality: true, newCapability: false },
+          { id: 29, capability: 'Q&A', description: 'Debug code issues with AI assistance', costSavings: 0, timeSavings: 280, quality: false, newCapability: false }
+        ],
+        experiments: [
+          { id: 30, capability: 'Vibe Coding', description: 'Full feature implementation with AI pair programming', costSavings: 0, timeSavings: 0, quality: false, newCapability: false }
+        ]
+      },
+      'Customer Success': {
+        workflows: [
+          { id: 31, capability: 'Summarizing', description: 'Automated QBR preparation from usage data', costSavings: 38000, timeSavings: 320, quality: true, newCapability: false }
+        ],
+        tasks: [
+          { id: 32, capability: 'Drafting', description: 'Create customer health reports', costSavings: 12000, timeSavings: 90, quality: false, newCapability: false }
+        ],
+        experiments: []
+      },
+      'Support': {
+        workflows: [
+          { id: 33, capability: 'Q&A', description: 'AI-powered ticket routing and initial response', costSavings: 52000, timeSavings: 480, quality: true, newCapability: true }
+        ],
+        tasks: [
+          { id: 34, capability: 'Summarizing', description: 'Summarize customer issue history', costSavings: 0, timeSavings: 120, quality: false, newCapability: false }
+        ],
+        experiments: []
+      },
+      'Product': {
+        workflows: [
+          { id: 35, capability: 'Analyzing', description: 'User feedback analysis and feature prioritization', costSavings: 42000, timeSavings: 0, quality: true, newCapability: true }
+        ],
+        tasks: [
+          { id: 36, capability: 'Drafting', description: 'Write product requirements documents', costSavings: 15000, timeSavings: 180, quality: false, newCapability: false }
+        ],
+        experiments: []
+      },
+      'Finance': {
+        workflows: [
+          { id: 37, capability: 'Analyzing', description: 'Automated variance analysis and reporting', costSavings: 48000, timeSavings: 0, quality: true, newCapability: false }
+        ],
+        tasks: [
+          { id: 38, capability: 'Summarizing', description: 'Create expense report summaries', costSavings: 8000, timeSavings: 60, quality: false, newCapability: false }
+        ],
+        experiments: []
+      },
+      'HR': {
+        workflows: [
+          { id: 39, capability: 'Drafting', description: 'Generate job descriptions and interview questions', costSavings: 22000, timeSavings: 180, quality: true, newCapability: false }
+        ],
+        tasks: [],
+        experiments: []
+      },
+      'Partnerships': {
+        workflows: [],
+        tasks: [
+          { id: 40, capability: 'Drafting', description: 'Create partner proposal documents', costSavings: 12000, timeSavings: 90, quality: false, newCapability: false }
+        ],
+        experiments: []
+      },
+      'SLT': {
+        workflows: [],
+        tasks: [
+          { id: 41, capability: 'Summarizing', description: 'Weekly business metrics summary', costSavings: 0, timeSavings: 120, quality: true, newCapability: false }
+        ],
+        experiments: []
+      }
+    };
+
     const DASHBOARD_DATA = {
       summary: { 
         totalWorkflows: 47, 
@@ -367,8 +484,91 @@
       );
     }
 
+    // Method Details Modal
+    function MethodDetailsModal({ isOpen, onClose, functionName, methodType, methods }) {
+      if (!isOpen) return null;
+
+      const methodTypeLabel = methodType === 'workflows' ? 'Workflows' : methodType === 'tasks' ? 'Tasks' : 'Experiments';
+      const methodTypeColor = methodType === 'workflows' ? COLORS.secondary : methodType === 'tasks' ? COLORS.primary : COLORS.primaryLight;
+
+      return (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4" onClick={onClose}>
+          <div className="bg-white rounded-2xl shadow-xl max-w-5xl w-full max-h-[85vh] overflow-hidden" onClick={(e) => e.stopPropagation()}>
+            {/* Header */}
+            <div className="px-6 py-4 border-b border-gray-200 flex items-center justify-between" style={{ backgroundColor: methodTypeColor + '10' }}>
+              <div>
+                <h3 className="text-xl font-bold text-gray-900">{functionName} - {methodTypeLabel}</h3>
+                <p className="text-sm text-gray-600">{methods.length} AI method{methods.length !== 1 ? 's' : ''}</p>
+              </div>
+              <button onClick={onClose} className="p-2 hover:bg-gray-200 rounded-lg transition-colors">
+                <X className="w-5 h-5 text-gray-500" />
+              </button>
+            </div>
+
+            {/* Table */}
+            <div className="overflow-auto max-h-[calc(85vh-80px)]">
+              {methods.length === 0 ? (
+                <div className="p-8 text-center text-gray-500">
+                  No {methodTypeLabel.toLowerCase()} recorded for {functionName}
+                </div>
+              ) : (
+                <table className="w-full">
+                  <thead className="bg-gray-50 sticky top-0">
+                    <tr className="text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
+                      <th className="px-6 py-3">AI Capability</th>
+                      <th className="px-6 py-3">Description</th>
+                      <th className="px-6 py-3 text-right">Cost Savings</th>
+                      <th className="px-6 py-3 text-right">Time Savings</th>
+                      <th className="px-6 py-3 text-center">Quality</th>
+                      <th className="px-6 py-3 text-center">New Capability</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-gray-200">
+                    {methods.map((method) => (
+                      <tr key={method.id} className="hover:bg-gray-50">
+                        <td className="px-6 py-4">
+                          <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium" style={{ backgroundColor: COLORS.primary + '20', color: COLORS.secondary }}>
+                            {method.capability}
+                          </span>
+                        </td>
+                        <td className="px-6 py-4 text-sm text-gray-700 max-w-md">{method.description}</td>
+                        <td className="px-6 py-4 text-sm text-right font-medium" style={{ color: method.costSavings > 0 ? COLORS.success : '#9ca3af' }}>
+                          {method.costSavings > 0 ? formatCurrency(method.costSavings) : '-'}
+                        </td>
+                        <td className="px-6 py-4 text-sm text-right font-medium" style={{ color: method.timeSavings > 0 ? COLORS.primary : '#9ca3af' }}>
+                          {method.timeSavings > 0 ? formatNumber(method.timeSavings) + ' hrs' : '-'}
+                        </td>
+                        <td className="px-6 py-4 text-center">
+                          {method.quality ? (
+                            <span className="inline-flex items-center justify-center w-6 h-6 rounded-full" style={{ backgroundColor: COLORS.purple + '20' }}>
+                              <Check className="w-4 h-4" style={{ color: COLORS.purple }} />
+                            </span>
+                          ) : (
+                            <span className="text-gray-300">-</span>
+                          )}
+                        </td>
+                        <td className="px-6 py-4 text-center">
+                          {method.newCapability ? (
+                            <span className="inline-flex items-center justify-center w-6 h-6 rounded-full" style={{ backgroundColor: COLORS.warning + '20' }}>
+                              <Check className="w-4 h-4" style={{ color: COLORS.warning }} />
+                            </span>
+                          ) : (
+                            <span className="text-gray-300">-</span>
+                          )}
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              )}
+            </div>
+          </div>
+        </div>
+      );
+    }
+
     // Methods Bar Chart with stacked bars
-    function MethodsBarChart({ data, title, subtitle }) {
+    function MethodsBarChart({ data, title, subtitle, onSegmentClick }) {
       const max = Math.max(...data.map(d => d.workflows + d.tasks + d.experiments));
       return (
         <div className="bg-white rounded-2xl border border-gray-200 p-6 shadow-sm">
@@ -396,15 +596,30 @@
                   <div className="w-28 text-sm text-gray-700 truncate font-medium">{item.function}</div>
                   <div className="flex-1 flex items-center">
                     <div className="flex h-7 rounded overflow-hidden" style={{ width: Math.max((total / max) * 100, 15) + '%' }}>
-                      <div className="h-full flex items-center justify-center" style={{ width: (item.workflows / total * 100) + '%', backgroundColor: COLORS.secondary }}>
-                        <span className="text-white text-xs font-bold">{item.workflows}</span>
+                      <div
+                        className="h-full flex items-center justify-center cursor-pointer hover:opacity-80 transition-opacity"
+                        style={{ width: (item.workflows / total * 100) + '%', backgroundColor: COLORS.secondary }}
+                        onClick={() => onSegmentClick && onSegmentClick(item.function, 'workflows')}
+                        title={`Click to view ${item.function} Workflows`}
+                      >
+                        <span className="text-white text-xs font-bold pointer-events-none">{item.workflows}</span>
                       </div>
-                      <div className="h-full flex items-center justify-center" style={{ width: (item.tasks / total * 100) + '%', backgroundColor: COLORS.primary }}>
-                        <span className="text-white text-xs font-bold">{item.tasks}</span>
+                      <div
+                        className="h-full flex items-center justify-center cursor-pointer hover:opacity-80 transition-opacity"
+                        style={{ width: (item.tasks / total * 100) + '%', backgroundColor: COLORS.primary }}
+                        onClick={() => onSegmentClick && onSegmentClick(item.function, 'tasks')}
+                        title={`Click to view ${item.function} Tasks`}
+                      >
+                        <span className="text-white text-xs font-bold pointer-events-none">{item.tasks}</span>
                       </div>
                       {item.experiments > 0 && (
-                        <div className="h-full flex items-center justify-center" style={{ width: (item.experiments / total * 100) + '%', backgroundColor: COLORS.primaryLight }}>
-                          <span className="text-gray-700 text-xs font-bold">{item.experiments}</span>
+                        <div
+                          className="h-full flex items-center justify-center cursor-pointer hover:opacity-80 transition-opacity"
+                          style={{ width: (item.experiments / total * 100) + '%', backgroundColor: COLORS.primaryLight }}
+                          onClick={() => onSegmentClick && onSegmentClick(item.function, 'experiments')}
+                          title={`Click to view ${item.function} Experiments`}
+                        >
+                          <span className="text-gray-700 text-xs font-bold pointer-events-none">{item.experiments}</span>
                         </div>
                       )}
                     </div>
@@ -534,8 +749,17 @@
     function AIDashboard() {
       const [expandedFunctions, setExpandedFunctions] = useState({});
       const [activeNav, setActiveNav] = useState('overview');
-      
+      const [modalData, setModalData] = useState({ isOpen: false, functionName: '', methodType: '', methods: [] });
+
       const toggleFunction = (func) => setExpandedFunctions(prev => ({ ...prev, [func]: !prev[func] }));
+
+      const handleSegmentClick = (functionName, methodType) => {
+        const functionMethods = SAMPLE_METHODS[functionName];
+        const methods = functionMethods ? functionMethods[methodType] || [] : [];
+        setModalData({ isOpen: true, functionName, methodType, methods });
+      };
+
+      const closeModal = () => setModalData({ isOpen: false, functionName: '', methodType: '', methods: [] });
 
       const totalMethods = DASHBOARD_DATA.summary.totalWorkflows + DASHBOARD_DATA.summary.totalTasks + DASHBOARD_DATA.summary.totalExperiments;
 
@@ -743,10 +967,11 @@
 
             {/* Charts Row 3: Total AI Methods by Function */}
             <div className="grid grid-cols-1 gap-6 mb-8">
-              <MethodsBarChart 
-                data={DASHBOARD_DATA.byFunction} 
+              <MethodsBarChart
+                data={DASHBOARD_DATA.byFunction}
                 title="Total AI Methods in Use by Function"
-                subtitle={"as of " + TODAY_DATE}
+                subtitle={"as of " + TODAY_DATE + " — click on chart segment for details"}
+                onSegmentClick={handleSegmentClick}
               />
             </div>
 
@@ -806,6 +1031,15 @@
               The data in this dashboard is not real.
             </div>
           </div>
+
+          {/* Method Details Modal */}
+          <MethodDetailsModal
+            isOpen={modalData.isOpen}
+            onClose={closeModal}
+            functionName={modalData.functionName}
+            methodType={modalData.methodType}
+            methods={modalData.methods}
+          />
         </div>
       );
     }
