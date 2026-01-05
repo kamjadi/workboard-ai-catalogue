@@ -1,0 +1,496 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Configuration Management - WorkBoard</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+  <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+  <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    body { font-family: 'DM Sans', system-ui, sans-serif; }
+  </style>
+</head>
+<body class="bg-gray-50">
+  <div id="root"></div>
+
+  <script type="text/babel">
+    const { useState, useEffect, useRef } = React;
+
+    // Icons
+    const Sparkles = ({ className, style }) => <svg className={className} style={style} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="m12 3-1.912 5.813a2 2 0 0 1-1.275 1.275L3 12l5.813 1.912a2 2 0 0 1 1.275 1.275L12 21l1.912-5.813a2 2 0 0 1 1.275-1.275L21 12l-5.813-1.912a2 2 0 0 1-1.275-1.275L12 3Z"/><path d="M5 3v4"/><path d="M19 17v4"/><path d="M3 5h4"/><path d="M17 19h4"/></svg>;
+    const BarChart3 = ({ className }) => <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M3 3v18h18"/><path d="M18 17V9"/><path d="M13 17V5"/><path d="M8 17v-3"/></svg>;
+    const FileText = ({ className }) => <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M14.5 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7.5L14.5 2z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><line x1="10" y1="9" x2="8" y2="9"/></svg>;
+    const ExternalLink = ({ className }) => <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>;
+    const PlusCircle = ({ className }) => <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="16"/><line x1="8" y1="12" x2="16" y2="12"/></svg>;
+    const Settings = ({ className }) => <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>;
+    const Sliders = ({ className }) => <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><line x1="4" y1="21" x2="4" y2="14"/><line x1="4" y1="10" x2="4" y2="3"/><line x1="12" y1="21" x2="12" y2="12"/><line x1="12" y1="8" x2="12" y2="3"/><line x1="20" y1="21" x2="20" y2="16"/><line x1="20" y1="12" x2="20" y2="3"/><line x1="1" y1="14" x2="7" y2="14"/><line x1="9" y1="8" x2="15" y2="8"/><line x1="17" y1="16" x2="23" y2="16"/></svg>;
+    const Edit = ({ className }) => <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>;
+    const Trash2 = ({ className }) => <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/><line x1="10" y1="11" x2="10" y2="17"/><line x1="14" y1="11" x2="14" y2="17"/></svg>;
+    const X = ({ className }) => <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>;
+    const ChevronDown = ({ className }) => <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="m6 9 6 6 6-6"/></svg>;
+    const Plus = ({ className }) => <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>;
+    const AlertTriangle = ({ className }) => <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3Z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>;
+
+    // WorkBoard Color Palette
+    const COLORS = {
+      primary: '#52bad5',
+      primaryDark: '#3a9cb8',
+      primaryLight: '#7fcce3',
+      secondary: '#2d7a8c',
+      success: '#3dad7a',
+      warning: '#e8a838',
+      danger: '#dc2626',
+      purple: '#7b68a6'
+    };
+
+    // Navigation Button Component
+    function NavButton({ label, icon: Icon, isActive, onClick }) {
+      return (
+        <button
+          onClick={onClick}
+          className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-all ${
+            isActive
+              ? 'text-white shadow-md'
+              : 'bg-white border border-gray-200 text-gray-700 hover:bg-gray-50 hover:border-gray-300'
+          }`}
+          style={isActive ? { backgroundColor: COLORS.primary } : {}}
+        >
+          {Icon && <Icon className="w-4 h-4" />}
+          {label}
+        </button>
+      );
+    }
+
+    // Delete Confirmation Modal
+    function DeleteModal({ isOpen, onClose, onConfirm, itemName, warning }) {
+      if (!isOpen) return null;
+      return (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-2xl shadow-xl max-w-md w-full p-6">
+            <div className="flex items-center gap-3 mb-4">
+              <div className="w-12 h-12 rounded-full flex items-center justify-center bg-red-100">
+                <AlertTriangle className="w-6 h-6 text-red-600" />
+              </div>
+              <div>
+                <h3 className="text-lg font-semibold text-gray-900">Delete Item</h3>
+                <p className="text-sm text-gray-500">This action cannot be undone</p>
+              </div>
+            </div>
+            <p className="text-gray-600 mb-2">
+              Are you sure you want to delete <span className="font-semibold">"{itemName}"</span>?
+            </p>
+            {warning && <p className="text-amber-600 text-sm mb-4">{warning}</p>}
+            <div className="flex gap-3 justify-end mt-6">
+              <button onClick={onClose} className="px-4 py-2 rounded-lg border border-gray-300 text-gray-700 font-medium hover:bg-gray-50">
+                Cancel
+              </button>
+              <button onClick={onConfirm} className="px-4 py-2 rounded-lg text-white font-medium hover:opacity-90" style={{ backgroundColor: COLORS.danger }}>
+                Delete
+              </button>
+            </div>
+          </div>
+        </div>
+      );
+    }
+
+    // Edit/Add Modal
+    function ItemModal({ isOpen, onClose, onSave, item, title, fields, functions }) {
+      const [formData, setFormData] = useState({});
+      const [saving, setSaving] = useState(false);
+      const [error, setError] = useState(null);
+      const firstInputRef = useRef(null);
+
+      useEffect(() => {
+        if (item) {
+          setFormData({ ...item });
+        } else {
+          const initial = {};
+          fields.forEach(f => initial[f.key] = f.default || '');
+          setFormData(initial);
+        }
+        setError(null);
+      }, [item, isOpen]);
+
+      // Focus input and move cursor to end when modal opens
+      useEffect(() => {
+        if (isOpen && firstInputRef.current) {
+          const input = firstInputRef.current;
+          input.focus();
+          // Move cursor to end of text
+          const len = input.value?.length || 0;
+          input.setSelectionRange(len, len);
+        }
+      }, [isOpen]);
+
+      if (!isOpen) return null;
+
+      const handleSave = async () => {
+        setSaving(true);
+        setError(null);
+        try {
+          await onSave(formData);
+          onClose();
+        } catch (err) {
+          setError(err.message);
+        } finally {
+          setSaving(false);
+        }
+      };
+
+      return (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-2xl shadow-xl max-w-md w-full p-6">
+            <div className="flex items-center justify-between mb-6">
+              <h3 className="text-xl font-semibold text-gray-900">{title}</h3>
+              <button onClick={onClose} className="p-2 hover:bg-gray-100 rounded-lg">
+                <X className="w-5 h-5 text-gray-500" />
+              </button>
+            </div>
+
+            <div className="space-y-4">
+              {fields.map(field => (
+                <div key={field.key}>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">{field.label}</label>
+                  {field.type === 'select' ? (
+                    <div className="relative">
+                      <select
+                        value={formData[field.key] || ''}
+                        onChange={(e) => setFormData(prev => ({ ...prev, [field.key]: parseInt(e.target.value) }))}
+                        className="w-full appearance-none bg-white border border-gray-300 rounded-lg px-4 py-2.5 text-gray-900 focus:outline-none focus:ring-2"
+                      >
+                        <option value="">Select {field.label}...</option>
+                        {(functions || []).map(f => (
+                          <option key={f.id} value={f.id}>{f.name}</option>
+                        ))}
+                      </select>
+                      <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 pointer-events-none" />
+                    </div>
+                  ) : (
+                    <input
+                      ref={field === fields.find(f => f.type !== 'select') ? firstInputRef : null}
+                      type="text"
+                      value={formData[field.key] || ''}
+                      onChange={(e) => setFormData(prev => ({ ...prev, [field.key]: e.target.value }))}
+                      className="w-full bg-white border border-gray-300 rounded-lg px-4 py-2.5 text-gray-900 focus:outline-none focus:ring-2"
+                      placeholder={field.placeholder || ''}
+                    />
+                  )}
+                </div>
+              ))}
+            </div>
+
+            {error && (
+              <div className="mt-4 p-3 bg-red-50 border border-red-200 rounded-lg text-red-700 text-sm">
+                {error}
+              </div>
+            )}
+
+            <div className="flex gap-3 justify-end mt-6">
+              <button onClick={onClose} className="px-4 py-2 rounded-lg border border-gray-300 text-gray-700 font-medium hover:bg-gray-50">
+                Cancel
+              </button>
+              <button
+                onClick={handleSave}
+                disabled={saving}
+                className="px-4 py-2 rounded-lg text-white font-medium hover:opacity-90 disabled:opacity-50"
+                style={{ backgroundColor: COLORS.primary }}
+              >
+                {saving ? 'Saving...' : 'Save'}
+              </button>
+            </div>
+          </div>
+        </div>
+      );
+    }
+
+    // Config Section Component
+    function ConfigSection({ title, items, onAdd, onEdit, onDelete, columns, functions }) {
+      return (
+        <div className="bg-white rounded-2xl border border-gray-200 shadow-sm overflow-hidden">
+          <div className="px-6 py-4 border-b border-gray-200 flex items-center justify-between">
+            <h3 className="text-lg font-semibold text-gray-900">{title}</h3>
+            <button
+              onClick={onAdd}
+              className="flex items-center gap-2 px-3 py-1.5 rounded-lg text-white text-sm font-medium hover:opacity-90"
+              style={{ backgroundColor: COLORS.primary }}
+            >
+              <Plus className="w-4 h-4" />
+              Add
+            </button>
+          </div>
+          <div className="overflow-x-auto">
+            <table className="w-full">
+              <thead className="bg-gray-50">
+                <tr>
+                  {columns.map(col => (
+                    <th key={col.key} className="px-6 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
+                      {col.label}
+                    </th>
+                  ))}
+                  <th className="px-6 py-3 text-right text-xs font-semibold text-gray-600 uppercase tracking-wider">Actions</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-gray-200">
+                {items.length === 0 ? (
+                  <tr>
+                    <td colSpan={columns.length + 1} className="px-6 py-8 text-center text-gray-500">
+                      No items found. Click "Add" to create one.
+                    </td>
+                  </tr>
+                ) : (
+                  items.map(item => (
+                    <tr key={item.id} className="hover:bg-gray-50">
+                      {columns.map(col => (
+                        <td key={col.key} className="px-6 py-4 text-sm text-gray-900">
+                          {col.render ? col.render(item, functions) : item[col.key]}
+                        </td>
+                      ))}
+                      <td className="px-6 py-4 text-right">
+                        <button
+                          onClick={() => onEdit(item)}
+                          className="p-2 text-gray-500 hover:text-gray-700 hover:bg-gray-100 rounded-lg mr-1"
+                        >
+                          <Edit className="w-4 h-4" />
+                        </button>
+                        <button
+                          onClick={() => onDelete(item)}
+                          className="p-2 text-gray-500 hover:text-red-600 hover:bg-red-50 rounded-lg"
+                        >
+                          <Trash2 className="w-4 h-4" />
+                        </button>
+                      </td>
+                    </tr>
+                  ))
+                )}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      );
+    }
+
+    // Main App
+    function ConfigAdmin() {
+      const [config, setConfig] = useState({ functions: [], teams: [], tools: [], capabilities: [] });
+      const [loading, setLoading] = useState(true);
+      const [activeTab, setActiveTab] = useState('functions');
+
+      // Modal states
+      const [editModal, setEditModal] = useState({ open: false, item: null, type: null });
+      const [deleteModal, setDeleteModal] = useState({ open: false, item: null, type: null });
+      const [error, setError] = useState(null);
+
+      // Fetch config
+      const fetchConfig = async () => {
+        try {
+          const res = await fetch('/api/config');
+          const data = await res.json();
+          setConfig(data);
+        } catch (err) {
+          setError('Failed to load configuration');
+        } finally {
+          setLoading(false);
+        }
+      };
+
+      useEffect(() => {
+        fetchConfig();
+      }, []);
+
+      // CRUD handlers
+      const handleSave = async (type, data) => {
+        const isEdit = !!data.id;
+        const url = isEdit ? `/api/config/${type}/${data.id}` : `/api/config/${type}`;
+        const method = isEdit ? 'PUT' : 'POST';
+
+        const response = await fetch(url, {
+          method,
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(data)
+        });
+
+        if (!response.ok) {
+          const err = await response.json();
+          throw new Error(err.detail || 'Failed to save');
+        }
+
+        await fetchConfig();
+      };
+
+      const handleDelete = async (type, id) => {
+        const response = await fetch(`/api/config/${type}/${id}`, { method: 'DELETE' });
+        if (!response.ok) {
+          const err = await response.json();
+          throw new Error(err.detail || 'Failed to delete');
+        }
+        await fetchConfig();
+        setDeleteModal({ open: false, item: null, type: null });
+      };
+
+      // Tab configs
+      const tabs = {
+        functions: {
+          title: 'Functions',
+          items: config.functions,
+          columns: [{ key: 'name', label: 'Name' }],
+          fields: [{ key: 'name', label: 'Function Name', placeholder: 'e.g., Sales, Marketing' }]
+        },
+        teams: {
+          title: 'Teams',
+          items: config.teams,
+          columns: [
+            { key: 'name', label: 'Team Name' },
+            { key: 'function_name', label: 'Function', render: (item, functions) => item.function_name || functions?.find(f => f.id === item.function_id)?.name || '-' }
+          ],
+          fields: [
+            { key: 'function_id', label: 'Function', type: 'select' },
+            { key: 'name', label: 'Team Name', placeholder: 'e.g., NA, EMEA, Backend' }
+          ]
+        },
+        tools: {
+          title: 'AI Tools',
+          items: config.tools,
+          columns: [{ key: 'name', label: 'Name' }],
+          fields: [{ key: 'name', label: 'Tool Name', placeholder: 'e.g., ChatGPT, Claude' }]
+        },
+        capabilities: {
+          title: 'AI Capabilities',
+          items: config.capabilities,
+          columns: [{ key: 'name', label: 'Name' }],
+          fields: [{ key: 'name', label: 'Capability Name', placeholder: 'e.g., Drafting, Summarizing' }]
+        }
+      };
+
+      const currentTab = tabs[activeTab];
+
+      if (loading) {
+        return (
+          <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+            <div className="text-gray-500">Loading configuration...</div>
+          </div>
+        );
+      }
+
+      return (
+        <div className="min-h-screen bg-gray-50">
+          <div className="max-w-6xl mx-auto px-6 py-8">
+            {/* Header */}
+            <div className="mb-6">
+              <div className="flex items-center gap-3 mb-2">
+                <div className="w-10 h-10 rounded-xl flex items-center justify-center" style={{ background: `linear-gradient(135deg, ${COLORS.primary}, ${COLORS.secondary})` }}>
+                  <Sliders className="w-5 h-5 text-white" />
+                </div>
+                <h1 className="text-2xl font-bold text-gray-900">Configuration Management</h1>
+              </div>
+              <p className="text-gray-600">Manage functions, teams, tools, and capabilities</p>
+            </div>
+
+            {/* Navigation Buttons */}
+            <div className="flex flex-wrap gap-3 mb-6">
+              <NavButton label="Overview" icon={BarChart3} isActive={false} onClick={() => window.location.href = '/'} />
+              <NavButton label="Instructions" icon={FileText} isActive={false} onClick={() => window.location.href = '/instructions'} />
+              <NavButton label="Live Dashboard" icon={ExternalLink} isActive={false} onClick={() => window.location.href = '/dashboard'} />
+              <NavButton label="Enter Your AI Use Cases" icon={PlusCircle} isActive={false} onClick={() => window.location.href = '/form'} />
+              <NavButton label="Manage Entries" icon={Settings} isActive={false} onClick={() => window.location.href = '/admin'} />
+              <NavButton label="Configuration" icon={Sliders} isActive={true} onClick={() => window.location.href = '/config'} />
+            </div>
+
+            {/* Tab Navigation */}
+            <div className="flex gap-2 mb-6 border-b border-gray-200">
+              {Object.entries(tabs).map(([key, tab]) => (
+                <button
+                  key={key}
+                  onClick={() => setActiveTab(key)}
+                  className={`px-4 py-2 text-sm font-medium border-b-2 transition-colors ${
+                    activeTab === key
+                      ? 'border-current text-[#52bad5]'
+                      : 'border-transparent text-gray-500 hover:text-gray-700'
+                  }`}
+                >
+                  {tab.title} ({tab.items.length})
+                </button>
+              ))}
+            </div>
+
+            {/* Error Message */}
+            {error && (
+              <div className="mb-6 p-4 bg-red-50 border border-red-200 rounded-xl text-red-700">
+                {error}
+                <button onClick={() => setError(null)} className="ml-4 text-red-500 hover:text-red-700">Dismiss</button>
+              </div>
+            )}
+
+            {/* Config Section */}
+            <ConfigSection
+              title={currentTab.title}
+              items={currentTab.items}
+              columns={currentTab.columns}
+              functions={config.functions}
+              onAdd={() => setEditModal({ open: true, item: null, type: activeTab })}
+              onEdit={(item) => setEditModal({ open: true, item, type: activeTab })}
+              onDelete={(item) => setDeleteModal({ open: true, item, type: activeTab })}
+            />
+
+            {/* Notes for specific tabs */}
+            {activeTab === 'tools' && (
+              <div className="mt-4 p-4 bg-blue-50 border border-blue-200 rounded-xl">
+                <p className="text-blue-800 text-sm">
+                  <strong>Tip:</strong> Adding a tool named "Other" will prompt users to enter a custom tool name in the form.
+                  This allows capturing tools not in the predefined list.
+                </p>
+              </div>
+            )}
+
+            {activeTab === 'teams' && (
+              <div className="mt-4 p-4 bg-blue-50 border border-blue-200 rounded-xl">
+                <p className="text-blue-800 text-sm">
+                  <strong>Tip:</strong> Functions without any teams will show "No team selection required" in the form.
+                  Only add teams for functions that need them.
+                </p>
+              </div>
+            )}
+
+            {/* Footer */}
+            <div className="mt-8 text-center text-gray-400 text-sm">
+              WorkBoard AI Usage Catalogue - Configuration
+            </div>
+          </div>
+
+          {/* Edit/Add Modal */}
+          <ItemModal
+            isOpen={editModal.open}
+            onClose={() => setEditModal({ open: false, item: null, type: null })}
+            onSave={(data) => handleSave(editModal.type, data)}
+            item={editModal.item}
+            title={editModal.item ? `Edit ${tabs[editModal.type]?.title?.slice(0, -1)}` : `Add ${tabs[editModal.type]?.title?.slice(0, -1)}`}
+            fields={tabs[editModal.type]?.fields || []}
+            functions={config.functions}
+          />
+
+          {/* Delete Modal */}
+          <DeleteModal
+            isOpen={deleteModal.open}
+            onClose={() => setDeleteModal({ open: false, item: null, type: null })}
+            onConfirm={async () => {
+              try {
+                await handleDelete(deleteModal.type, deleteModal.item.id);
+              } catch (err) {
+                setError(err.message);
+                setDeleteModal({ open: false, item: null, type: null });
+              }
+            }}
+            itemName={deleteModal.item?.name}
+            warning={deleteModal.type === 'functions' ? 'Functions with teams cannot be deleted.' :
+                    deleteModal.type === 'teams' || deleteModal.type === 'capabilities' ? 'Items referenced by responses cannot be deleted.' : null}
+          />
+        </div>
+      );
+    }
+
+    ReactDOM.createRoot(document.getElementById('root')).render(<ConfigAdmin />);
+  </script>
+</body>
+</html>

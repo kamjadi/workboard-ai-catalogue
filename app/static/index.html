@@ -1,0 +1,756 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>WorkBoard AI Usage Catalogue</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+  <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+  <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    body { font-family: 'DM Sans', system-ui, sans-serif; }
+  </style>
+</head>
+<body class="bg-gray-50">
+  <div id="root"></div>
+  
+  <script type="text/babel">
+    const { useState } = React;
+
+    // Icons
+    const Layers = ({ className, style }) => <svg className={className} style={style} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><polygon points="12 2 2 7 12 12 22 7 12 2"/><polyline points="2 17 12 22 22 17"/><polyline points="2 12 12 17 22 12"/></svg>;
+    const CheckCircle2 = ({ className, style }) => <svg className={className} style={style} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="12" cy="12" r="10"/><path d="m9 12 2 2 4-4"/></svg>;
+    const DollarSign = ({ className, style }) => <svg className={className} style={style} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>;
+    const Clock = ({ className, style }) => <svg className={className} style={style} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>;
+    const Award = ({ className, style }) => <svg className={className} style={style} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="12" cy="8" r="6"/><path d="M15.477 12.89 17 22l-5-3-5 3 1.523-9.11"/></svg>;
+    const Zap = ({ className, style }) => <svg className={className} style={style} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>;
+    const ChevronDown = ({ className }) => <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="m6 9 6 6 6-6"/></svg>;
+    const ChevronRight = ({ className }) => <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="m9 18 6-6-6-6"/></svg>;
+    const ChevronUp = ({ className }) => <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="m18 15-6-6-6 6"/></svg>;
+    const Building2 = ({ className }) => <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M6 22V4a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2v18Z"/><path d="M6 12H4a2 2 0 0 0-2 2v6a2 2 0 0 0 2 2h2"/><path d="M18 9h2a2 2 0 0 1 2 2v9a2 2 0 0 1-2 2h-2"/><path d="M10 6h4"/><path d="M10 10h4"/><path d="M10 14h4"/><path d="M10 18h4"/></svg>;
+    const Sparkles = ({ className, style }) => <svg className={className} style={style} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="m12 3-1.912 5.813a2 2 0 0 1-1.275 1.275L3 12l5.813 1.912a2 2 0 0 1 1.275 1.275L12 21l1.912-5.813a2 2 0 0 1 1.275-1.275L21 12l-5.813-1.912a2 2 0 0 1-1.275-1.275L12 3Z"/><path d="M5 3v4"/><path d="M19 17v4"/><path d="M3 5h4"/><path d="M17 19h4"/></svg>;
+    const MousePointerClick = ({ className }) => <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="m9 9 5 12 1.8-5.2L21 14Z"/><path d="M7.2 2.2 8 5.1"/><path d="m5.1 8-2.9-.8"/><path d="M14 4.1 12 6"/><path d="m6 12-1.9 2"/></svg>;
+    const ExternalLink = ({ className }) => <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>;
+    const FileText = ({ className }) => <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M14.5 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7.5L14.5 2z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><line x1="10" y1="9" x2="8" y2="9"/></svg>;
+    const BarChart3 = ({ className }) => <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M3 3v18h18"/><path d="M18 17V9"/><path d="M13 17V5"/><path d="M8 17v-3"/></svg>;
+    const PlusCircle = ({ className }) => <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="16"/><line x1="8" y1="12" x2="16" y2="12"/></svg>;
+    const Settings = ({ className }) => <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>;
+    const Sliders = ({ className }) => <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><line x1="4" y1="21" x2="4" y2="14"/><line x1="4" y1="10" x2="4" y2="3"/><line x1="12" y1="21" x2="12" y2="12"/><line x1="12" y1="8" x2="12" y2="3"/><line x1="20" y1="21" x2="20" y2="16"/><line x1="20" y1="12" x2="20" y2="3"/><line x1="1" y1="14" x2="7" y2="14"/><line x1="9" y1="8" x2="15" y2="8"/><line x1="17" y1="16" x2="23" y2="16"/></svg>;
+    const Info = ({ className }) => <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg>;
+
+    const TODAY_DATE = new Date().toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+
+    // WorkBoard Color Palette
+    const COLORS = {
+      primary: '#52bad5',
+      primaryDark: '#3a9cb8',
+      primaryLight: '#7fcce3',
+      secondary: '#2d7a8c',
+      accent1: '#45a5c0',
+      accent2: '#8fd4e8',
+      accent3: '#1e5c6b',
+      success: '#3dad7a',
+      warning: '#e8a838',
+      purple: '#7b68a6',
+      slate: '#64748b'
+    };
+
+    // Sample Data
+    const DASHBOARD_DATA = {
+      summary: { 
+        totalWorkflows: 47, 
+        totalTasks: 124, 
+        totalExperiments: 23, 
+        totalAnnualCostSavings: 2450000,
+        totalHoursSaved: 18720, 
+        qualityImpactCount: 27,
+        newCapabilityCount: 18,
+        totalUsers: 156 
+      },
+      byCategory: {
+        workflows: { count: 47, annualCostSavings: 980000, hoursSaved: 8320, impactBreakdown: { costSavings: 28, timeSavings: 32, qualityImprovement: 12, newCapability: 8 } },
+        tasks: { count: 124, annualCostSavings: 1320000, hoursSaved: 9400, impactBreakdown: { costSavings: 45, timeSavings: 89, qualityImprovement: 12, newCapability: 7 } },
+        experimentation: { count: 23, annualCostSavings: 150000, hoursSaved: 1000, impactBreakdown: { costSavings: 6, timeSavings: 12, qualityImprovement: 3, newCapability: 3 } }
+      },
+      byFunction: [
+        { function: 'Sales', workflows: 12, tasks: 34, experiments: 5, annualCostSavings: 545000, hoursSaved: 4200, qualityImpact: 6, newCapability: 4, users: 28 },
+        { function: 'Marketing', workflows: 8, tasks: 22, experiments: 4, annualCostSavings: 362000, hoursSaved: 2800, qualityImpact: 4, newCapability: 3, users: 18 },
+        { function: 'Engineering', workflows: 9, tasks: 28, experiments: 8, annualCostSavings: 520000, hoursSaved: 3900, qualityImpact: 5, newCapability: 4, users: 32 },
+        { function: 'Customer Success', workflows: 6, tasks: 18, experiments: 2, annualCostSavings: 285000, hoursSaved: 2100, qualityImpact: 4, newCapability: 2, users: 22 },
+        { function: 'Support', workflows: 5, tasks: 12, experiments: 2, annualCostSavings: 245000, hoursSaved: 1900, qualityImpact: 3, newCapability: 2, users: 16 },
+        { function: 'Product', workflows: 4, tasks: 6, experiments: 1, annualCostSavings: 215000, hoursSaved: 1600, qualityImpact: 2, newCapability: 1, users: 14 },
+        { function: 'Finance', workflows: 2, tasks: 3, experiments: 1, annualCostSavings: 158000, hoursSaved: 1200, qualityImpact: 2, newCapability: 1, users: 12 },
+        { function: 'HR', workflows: 1, tasks: 1, experiments: 0, annualCostSavings: 120000, hoursSaved: 1020, qualityImpact: 1, newCapability: 1, users: 14 }
+      ],
+      byTeam: {
+        'Sales': [
+          { team: 'NA', workflows: 5, tasks: 14, experiments: 2, annualCostSavings: 245000, hoursSaved: 1800, users: 12 },
+          { team: 'EMEA', workflows: 4, tasks: 12, experiments: 2, annualCostSavings: 185000, hoursSaved: 1400, users: 9 },
+          { team: 'Enterprise', workflows: 2, tasks: 5, experiments: 1, annualCostSavings: 75000, hoursSaved: 650, users: 4 },
+          { team: 'SMB', workflows: 1, tasks: 3, experiments: 0, annualCostSavings: 40000, hoursSaved: 350, users: 3 }
+        ],
+        'Marketing': [
+          { team: 'Content', workflows: 3, tasks: 10, experiments: 2, annualCostSavings: 145000, hoursSaved: 1100, users: 6 },
+          { team: 'Demand Gen', workflows: 3, tasks: 7, experiments: 1, annualCostSavings: 122000, hoursSaved: 950, users: 5 },
+          { team: 'Brand', workflows: 2, tasks: 5, experiments: 1, annualCostSavings: 95000, hoursSaved: 750, users: 7 }
+        ],
+        'Engineering': [
+          { team: 'Backend', workflows: 4, tasks: 12, experiments: 4, annualCostSavings: 235000, hoursSaved: 1750, users: 14 },
+          { team: 'Frontend', workflows: 3, tasks: 10, experiments: 3, annualCostSavings: 165000, hoursSaved: 1250, users: 10 },
+          { team: 'DevOps', workflows: 2, tasks: 6, experiments: 1, annualCostSavings: 120000, hoursSaved: 900, users: 8 }
+        ],
+        'Customer Success': [
+          { team: 'Enterprise CS', workflows: 3, tasks: 9, experiments: 1, annualCostSavings: 155000, hoursSaved: 1100, users: 10 },
+          { team: 'SMB CS', workflows: 2, tasks: 6, experiments: 1, annualCostSavings: 85000, hoursSaved: 650, users: 8 },
+          { team: 'Onboarding', workflows: 1, tasks: 3, experiments: 0, annualCostSavings: 45000, hoursSaved: 350, users: 4 }
+        ],
+        'Support': [
+          { team: 'Tier 1', workflows: 2, tasks: 6, experiments: 1, annualCostSavings: 105000, hoursSaved: 850, users: 8 },
+          { team: 'Tier 2', workflows: 2, tasks: 4, experiments: 1, annualCostSavings: 85000, hoursSaved: 650, users: 5 },
+          { team: 'Technical Support', workflows: 1, tasks: 2, experiments: 0, annualCostSavings: 55000, hoursSaved: 400, users: 3 }
+        ],
+        'Product': [
+          { team: 'Core Product', workflows: 2, tasks: 3, experiments: 1, annualCostSavings: 125000, hoursSaved: 950, users: 8 },
+          { team: 'Analytics', workflows: 2, tasks: 3, experiments: 0, annualCostSavings: 90000, hoursSaved: 650, users: 6 }
+        ],
+        'Finance': [
+          { team: 'FP&A', workflows: 1, tasks: 2, experiments: 1, annualCostSavings: 88000, hoursSaved: 650, users: 6 },
+          { team: 'Accounting', workflows: 1, tasks: 1, experiments: 0, annualCostSavings: 70000, hoursSaved: 550, users: 6 }
+        ],
+        'HR': [
+          { team: 'Recruiting', workflows: 1, tasks: 1, experiments: 0, annualCostSavings: 120000, hoursSaved: 1020, users: 14 }
+        ]
+      },
+      byMethodType: [
+        { type: 'Drafting', count: 52, icon: '✍️' },
+        { type: 'Summarizing', count: 38, icon: '📝' },
+        { type: 'Analyzing', count: 28, icon: '📊' },
+        { type: 'Q&A', count: 24, icon: '🔍' },
+        { type: 'Coding', count: 18, icon: '💻' },
+        { type: 'Automation', count: 14, icon: '⚙️' },
+        { type: 'Classifying', count: 12, icon: '🏷️' },
+        { type: 'Vibe Coding', count: 8, icon: '🎯' }
+      ],
+      byTool: [
+        { tool: 'ChatGPT', count: 89, color: COLORS.primary },
+        { tool: 'Claude', count: 62, color: COLORS.secondary },
+        { tool: 'Gemini', count: 18, color: COLORS.accent1 },
+        { tool: 'Gong', count: 12, color: COLORS.purple },
+        { tool: 'Other', count: 13, color: COLORS.slate }
+      ],
+      impactTypes: [
+        { type: 'Cost Savings', count: 79, color: COLORS.success },
+        { type: 'Time Savings', count: 133, color: COLORS.primary },
+        { type: 'Quality Improvement', count: 27, color: COLORS.purple },
+        { type: 'New Capability', count: 18, color: COLORS.warning }
+      ]
+    };
+
+    const formatCurrency = (value) => {
+      if (value >= 1000000) return '$' + (value / 1000000).toFixed(1) + 'M';
+      if (value >= 1000) return '$' + Math.round(value / 1000) + 'K';
+      return '$' + value;
+    };
+    const formatNumber = (value) => new Intl.NumberFormat('en-US').format(value);
+
+    // Collapsible Section Component
+    function CollapsibleSection({ title, defaultOpen, children, icon: Icon }) {
+      const [isOpen, setIsOpen] = useState(defaultOpen);
+      
+      return (
+        <div className="bg-white rounded-xl border border-gray-200 shadow-sm mb-4 overflow-hidden">
+          <button 
+            onClick={() => setIsOpen(!isOpen)}
+            className="w-full px-5 py-4 flex items-center justify-between hover:bg-gray-50 transition-colors"
+          >
+            <div className="flex items-center gap-3">
+              {Icon && <Icon className="w-5 h-5" style={{ color: COLORS.primary }} />}
+              <span className="font-semibold text-gray-900">{title}</span>
+            </div>
+            {isOpen ? <ChevronUp className="w-5 h-5 text-gray-500" /> : <ChevronDown className="w-5 h-5 text-gray-500" />}
+          </button>
+          {isOpen && (
+            <div className="px-5 pb-5 border-t border-gray-100">
+              {children}
+            </div>
+          )}
+        </div>
+      );
+    }
+
+    // Navigation Button
+    function NavButton({ label, icon: Icon, isActive, onClick, disabled }) {
+      return (
+        <button 
+          onClick={onClick}
+          disabled={disabled}
+          className={`flex items-center gap-2 px-4 py-2 rounded-lg font-medium text-sm transition-all ${
+            isActive 
+              ? 'text-white shadow-md' 
+              : disabled 
+                ? 'bg-gray-100 text-gray-400 cursor-not-allowed'
+                : 'bg-white text-gray-700 border border-gray-300 hover:bg-gray-50 hover:border-gray-400'
+          }`}
+          style={isActive ? { backgroundColor: COLORS.primary } : {}}
+        >
+          <Icon className="w-4 h-4" />
+          {label}
+        </button>
+      );
+    }
+
+    // Stat Card with optional stacked bar
+    function StatCard({ title, titleSub, value, valueSub, icon: Icon, color, showStackedBar, stackData }) {
+      const total = stackData ? stackData.reduce((sum, d) => sum + d.value, 0) : 0;
+      
+      return (
+        <div className="bg-white rounded-2xl border border-gray-200 p-5 shadow-sm">
+          <div className="flex items-start justify-between">
+            <div className="flex-1 pr-2">
+              <p className="text-gray-700 text-sm font-medium leading-tight">{title}</p>
+              {titleSub && <p className="text-gray-400 text-xs mt-0.5">{titleSub}</p>}
+              <p className="text-3xl font-bold text-gray-900 mt-2">{value}</p>
+              {valueSub && <p className="text-gray-500 text-sm mt-1">{valueSub}</p>}
+            </div>
+            <div className="w-11 h-11 rounded-xl flex items-center justify-center flex-shrink-0" style={{ backgroundColor: color + '20' }}>
+              <Icon className="w-5 h-5" style={{ color: color }} />
+            </div>
+          </div>
+          {showStackedBar && stackData && (
+            <div className="mt-4 overflow-hidden">
+              <div className="flex h-2.5 rounded-full overflow-hidden bg-gray-100">
+                {stackData.map((item, idx) => (
+                  <div 
+                    key={idx}
+                    style={{ width: (item.value / total * 100) + '%', backgroundColor: item.color }}
+                    title={item.label + ': ' + item.value}
+                  ></div>
+                ))}
+              </div>
+              <div className="flex flex-wrap gap-x-3 gap-y-1 mt-2">
+                {stackData.map((item, idx) => (
+                  <div key={idx} className="flex items-center gap-1">
+                    <div className="w-2 h-2 rounded-full flex-shrink-0" style={{ backgroundColor: item.color }}></div>
+                    <span className="text-gray-600 text-xs whitespace-nowrap">{item.label}: {item.value}</span>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+        </div>
+      );
+    }
+
+    // Category Card
+    function CategoryCard({ title, data, color, icon: Icon }) {
+      return (
+        <div className="bg-white rounded-2xl border border-gray-200 p-6 shadow-sm">
+          <div className="flex items-center gap-3 mb-4">
+            <div className="w-10 h-10 rounded-xl flex items-center justify-center" style={{ backgroundColor: color + '20' }}>
+              <Icon className="w-5 h-5" style={{ color: color }} />
+            </div>
+            <h3 className="text-lg font-semibold text-gray-900">{title}</h3>
+          </div>
+          
+          <div className="grid grid-cols-3 gap-4">
+            <div>
+              <p className="text-3xl font-bold text-gray-900">{data.count}</p>
+              <p className="text-gray-500 text-sm">Total Count</p>
+            </div>
+            <div>
+              <p className="text-2xl font-bold" style={{ color: COLORS.success }}>{formatCurrency(data.annualCostSavings)}</p>
+              <p className="text-gray-500 text-sm">Cost Savings</p>
+            </div>
+            <div>
+              <p className="text-2xl font-bold" style={{ color: COLORS.primary }}>{formatNumber(data.hoursSaved)}</p>
+              <p className="text-gray-500 text-sm">Hours Saved</p>
+            </div>
+          </div>
+          
+          <div className="mt-4 pt-4 border-t border-gray-200">
+            <p className="text-gray-700 text-xs font-semibold mb-3 uppercase tracking-wide">AI Method Impact Breakdown (count)</p>
+            <div className="space-y-2 text-sm">
+              <div className="flex items-center">
+                <span className="text-gray-900 font-bold w-8">{data.impactBreakdown.costSavings}</span>
+                <span className="text-gray-600">Cost Savings</span>
+              </div>
+              <div className="flex items-center">
+                <span className="text-gray-900 font-bold w-8">{data.impactBreakdown.timeSavings}</span>
+                <span className="text-gray-600">Time Savings</span>
+              </div>
+              <div className="flex items-center">
+                <span className="text-gray-900 font-bold w-8">{data.impactBreakdown.qualityImprovement}</span>
+                <span className="text-gray-600">Quality Improvement</span>
+              </div>
+              <div className="flex items-center">
+                <span className="text-gray-900 font-bold w-8">{data.impactBreakdown.newCapability}</span>
+                <span className="text-gray-600">New Capability</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      );
+    }
+
+    // Generic Horizontal Bar Chart
+    function HorizontalBarChart({ data, title, subtitle, dataKey, formatter, color }) {
+      const max = Math.max(...data.map(d => d[dataKey]));
+      return (
+        <div className="bg-white rounded-2xl border border-gray-200 p-6 shadow-sm">
+          <h3 className="text-lg font-semibold text-gray-900">{title}</h3>
+          {subtitle && <p className="text-gray-400 text-xs mt-0.5 mb-4">{subtitle}</p>}
+          {!subtitle && <div className="mb-4"></div>}
+          <div className="space-y-3">
+            {data.map((item, idx) => (
+              <div key={idx} className="flex items-center gap-3">
+                <div className="w-28 text-sm text-gray-700 truncate font-medium">{item.function}</div>
+                <div className="flex-1 flex items-center gap-2">
+                  <div className="h-7 rounded flex items-center px-3" style={{ width: Math.max((item[dataKey] / max) * 100, 18) + '%', backgroundColor: color }}>
+                    <span className="text-white text-xs font-bold">{formatter ? formatter(item[dataKey]) : item[dataKey]}</span>
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      );
+    }
+
+    // Methods Bar Chart with stacked bars
+    function MethodsBarChart({ data, title, subtitle }) {
+      const max = Math.max(...data.map(d => d.workflows + d.tasks + d.experiments));
+      return (
+        <div className="bg-white rounded-2xl border border-gray-200 p-6 shadow-sm">
+          <h3 className="text-lg font-semibold text-gray-900">{title}</h3>
+          {subtitle && <p className="text-gray-400 text-xs mt-0.5">{subtitle}</p>}
+          <div className="flex gap-4 mt-3 mb-4 text-sm">
+            <div className="flex items-center gap-2">
+              <div className="w-3 h-3 rounded" style={{ backgroundColor: COLORS.secondary }}></div>
+              <span className="text-gray-600">Workflows</span>
+            </div>
+            <div className="flex items-center gap-2">
+              <div className="w-3 h-3 rounded" style={{ backgroundColor: COLORS.primary }}></div>
+              <span className="text-gray-600">Tasks</span>
+            </div>
+            <div className="flex items-center gap-2">
+              <div className="w-3 h-3 rounded" style={{ backgroundColor: COLORS.primaryLight }}></div>
+              <span className="text-gray-600">Experiments</span>
+            </div>
+          </div>
+          <div className="space-y-3">
+            {data.map((item, idx) => {
+              const total = item.workflows + item.tasks + item.experiments;
+              return (
+                <div key={idx} className="flex items-center gap-3">
+                  <div className="w-28 text-sm text-gray-700 truncate font-medium">{item.function}</div>
+                  <div className="flex-1 flex items-center">
+                    <div className="flex h-7 rounded overflow-hidden" style={{ width: Math.max((total / max) * 100, 15) + '%' }}>
+                      <div className="h-full flex items-center justify-center" style={{ width: (item.workflows / total * 100) + '%', backgroundColor: COLORS.secondary }}>
+                        <span className="text-white text-xs font-bold">{item.workflows}</span>
+                      </div>
+                      <div className="h-full flex items-center justify-center" style={{ width: (item.tasks / total * 100) + '%', backgroundColor: COLORS.primary }}>
+                        <span className="text-white text-xs font-bold">{item.tasks}</span>
+                      </div>
+                      {item.experiments > 0 && (
+                        <div className="h-full flex items-center justify-center" style={{ width: (item.experiments / total * 100) + '%', backgroundColor: COLORS.primaryLight }}>
+                          <span className="text-gray-700 text-xs font-bold">{item.experiments}</span>
+                        </div>
+                      )}
+                    </div>
+                    <span className="ml-2 text-gray-600 text-sm font-medium">{total}</span>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      );
+    }
+
+    // Donut Chart
+    function DonutChart({ data, title }) {
+      const total = data.reduce((sum, d) => sum + d.count, 0);
+      let cumulative = 0;
+      
+      const gradientStops = data.map(d => {
+        const start = (cumulative / total) * 100;
+        cumulative += d.count;
+        const end = (cumulative / total) * 100;
+        return d.color + ' ' + start + '% ' + end + '%';
+      }).join(', ');
+
+      return (
+        <div className="bg-white rounded-2xl border border-gray-200 p-6 shadow-sm">
+          <h3 className="text-lg font-semibold text-gray-900 mb-4">{title}</h3>
+          <div className="flex items-center justify-center gap-8">
+            <div className="relative w-36 h-36">
+              <div 
+                className="w-full h-full rounded-full"
+                style={{ background: 'conic-gradient(' + gradientStops + ')' }}
+              ></div>
+              <div className="absolute inset-0 flex items-center justify-center">
+                <div className="w-20 h-20 rounded-full bg-white flex items-center justify-center">
+                  <span className="text-2xl font-bold text-gray-900">{total}</span>
+                </div>
+              </div>
+            </div>
+            <div className="space-y-2">
+              {data.map((item, idx) => (
+                <div key={idx} className="flex items-center gap-2">
+                  <div className="w-3 h-3 rounded" style={{ backgroundColor: item.color }}></div>
+                  <span className="text-gray-700 text-sm">{item.type || item.tool}</span>
+                  <span className="text-gray-900 font-bold text-sm">{item.count}</span>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+      );
+    }
+
+    // Function Row
+    function FunctionRow({ data, teams, isExpanded, onToggle }) {
+      return (
+        <div className="border-b border-gray-200 last:border-0">
+          <button onClick={onToggle} className="w-full px-6 py-4 flex items-center justify-between hover:bg-gray-50 transition-colors">
+            <div className="flex items-center gap-4">
+              {isExpanded ? <ChevronDown className="w-5 h-5" style={{ color: COLORS.primary }} /> : <ChevronRight className="w-5 h-5 text-gray-400" />}
+              <span className="text-gray-900 font-medium">{data.function}</span>
+            </div>
+            <div className="flex items-center gap-6 text-sm">
+              <div className="text-center w-16"><span className="font-semibold" style={{ color: COLORS.secondary }}>{data.workflows}</span><span className="text-gray-500 text-xs ml-1">wf</span></div>
+              <div className="text-center w-16"><span className="font-semibold" style={{ color: COLORS.primary }}>{data.tasks}</span><span className="text-gray-500 text-xs ml-1">tasks</span></div>
+              <div className="text-center w-16"><span className="font-semibold" style={{ color: COLORS.primaryLight }}>{data.experiments}</span><span className="text-gray-500 text-xs ml-1">exp</span></div>
+              <div className="text-center w-20"><span className="font-semibold" style={{ color: COLORS.success }}>{formatCurrency(data.annualCostSavings)}</span></div>
+              <div className="text-center w-20"><span className="font-semibold" style={{ color: COLORS.primary }}>{formatNumber(data.hoursSaved)}</span><span className="text-gray-500 text-xs ml-1">hrs</span></div>
+              <div className="text-center w-12"><span className="text-gray-700 font-semibold">{data.users}</span></div>
+            </div>
+          </button>
+          {isExpanded && teams && (
+            <div className="bg-gray-50 px-6 py-3 border-t border-gray-200">
+              <table className="w-full">
+                <thead>
+                  <tr className="text-xs text-gray-500 uppercase tracking-wider">
+                    <th className="text-left py-2 pl-10">Team</th>
+                    <th className="text-center py-2">Workflows</th>
+                    <th className="text-center py-2">Tasks</th>
+                    <th className="text-center py-2">Experiments</th>
+                    <th className="text-center py-2">Cost Savings</th>
+                    <th className="text-center py-2">Hours Saved</th>
+                    <th className="text-center py-2">Users</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {teams.map((team, idx) => (
+                    <tr key={idx} className="text-sm border-t border-gray-200">
+                      <td className="py-3 pl-10 text-gray-700">{team.team}</td>
+                      <td className="py-3 text-center font-medium" style={{ color: COLORS.secondary }}>{team.workflows}</td>
+                      <td className="py-3 text-center font-medium" style={{ color: COLORS.primary }}>{team.tasks}</td>
+                      <td className="py-3 text-center font-medium" style={{ color: COLORS.primaryLight }}>{team.experiments}</td>
+                      <td className="py-3 text-center font-medium" style={{ color: COLORS.success }}>{formatCurrency(team.annualCostSavings)}</td>
+                      <td className="py-3 text-center font-medium" style={{ color: COLORS.primary }}>{formatNumber(team.hoursSaved)}</td>
+                      <td className="py-3 text-center text-gray-700 font-medium">{team.users}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          )}
+        </div>
+      );
+    }
+
+    // Main Dashboard
+    function AIDashboard() {
+      const [expandedFunctions, setExpandedFunctions] = useState({});
+      const [activeNav, setActiveNav] = useState('overview');
+      
+      const toggleFunction = (func) => setExpandedFunctions(prev => ({ ...prev, [func]: !prev[func] }));
+
+      const totalMethods = DASHBOARD_DATA.summary.totalWorkflows + DASHBOARD_DATA.summary.totalTasks + DASHBOARD_DATA.summary.totalExperiments;
+
+      const stackData = [
+        { label: 'Workflows', value: DASHBOARD_DATA.summary.totalWorkflows, color: COLORS.secondary },
+        { label: 'Tasks', value: DASHBOARD_DATA.summary.totalTasks, color: COLORS.primary },
+        { label: 'Experiments', value: DASHBOARD_DATA.summary.totalExperiments, color: COLORS.primaryLight }
+      ];
+
+      return (
+        <div className="min-h-screen bg-gray-50">
+          <div className="max-w-7xl mx-auto px-6 py-8">
+            {/* Header */}
+            <div className="mb-6">
+              <div className="flex items-center gap-3 mb-4">
+                <div className="w-10 h-10 rounded-xl flex items-center justify-center" style={{ background: 'linear-gradient(135deg, ' + COLORS.primary + ', ' + COLORS.secondary + ')' }}>
+                  <Sparkles className="w-5 h-5 text-white" />
+                </div>
+                <h1 className="text-2xl font-bold text-gray-900">WorkBoard's Internal AI Usage and Impact Catalogue (v1.0)</h1>
+              </div>
+              <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-lg text-sm font-medium" style={{ backgroundColor: COLORS.warning + '20', color: COLORS.warning }}>
+                <Info className="w-4 h-4" />
+                This is a mockup preview of the dashboard for evaluation
+              </div>
+            </div>
+
+            {/* Intro Collapsible Section */}
+            <CollapsibleSection title="About This Dashboard (click to read overview)" defaultOpen={false} icon={Info}>
+              <div className="pt-4 text-gray-700 space-y-3">
+                <p>
+                  This is a sample dashboard that we intend to generate with the data that you input in this system. We are attempting to catalogue our teams' AI usage and assign an estimated impact value to our efforts.
+                </p>
+                <p>
+                  The <strong>Instructions</strong> button below walks you through the data entry fields.
+                </p>
+                <p>
+                  When you are ready, click the <strong>Enter Your AI Use Cases</strong> button to enter one workflow, task, or experiment. You can/should enter each use case separately.
+                </p>
+                <p>
+                  The <strong>Live Dashboard</strong> button will show the aggregated results.
+                </p>
+              </div>
+            </CollapsibleSection>
+
+            {/* Navigation Buttons */}
+            <div className="flex flex-wrap gap-3 mb-4">
+              <NavButton
+                label="Overview"
+                icon={BarChart3}
+                isActive={true}
+                onClick={() => window.location.href = '/'}
+              />
+              <NavButton
+                label="Instructions"
+                icon={FileText}
+                isActive={false}
+                onClick={() => window.location.href = '/instructions'}
+              />
+              <NavButton
+                label="Live Dashboard"
+                icon={ExternalLink}
+                isActive={false}
+                onClick={() => window.location.href = '/dashboard'}
+              />
+              <NavButton
+                label="Enter Your AI Use Cases"
+                icon={PlusCircle}
+                isActive={false}
+                onClick={() => window.location.href = '/form'}
+              />
+              <NavButton
+                label="Manage Entries"
+                icon={Settings}
+                isActive={false}
+                onClick={() => window.location.href = '/admin'}
+              />
+              <NavButton
+                label="Configuration"
+                icon={Sliders}
+                isActive={false}
+                onClick={() => window.location.href = '/config'}
+              />
+            </div>
+
+            {/* Definitions Collapsible Section */}
+            <CollapsibleSection title="AI Method Types & Impact Categories (click to read overview)" defaultOpen={false} icon={FileText}>
+              <div className="pt-4 text-gray-700 space-y-4">
+                <div>
+                  <p className="font-semibold text-gray-900 mb-2">Initially we will categorize our AI usage into 3 AI Method types:</p>
+                  <ol className="list-decimal list-inside space-y-2 ml-2">
+                    <li>
+                      <strong>Workflows</strong> – Workflows are the type of AI where more than 1 task is chained together. <span className="text-gray-500 italic">(e.g., I record a sales meeting using tool A, summarize it using tool A or B, send it via Slack to xyz)</span>
+                    </li>
+                    <li>
+                      <strong>Tasks</strong> – Tasks are single step uses of AI. <span className="text-gray-500 italic">(e.g., I research an account using ChatGPT)</span>
+                    </li>
+                  </ol>
+                  <p className="mt-3 text-gray-600">
+                    Both of the above can be used once, or used on an ongoing basis. The estimated impact calculation (cost savings, time savings) will capture the frequency impact.
+                  </p>
+                  <ol start="3" className="list-decimal list-inside space-y-2 ml-2 mt-2">
+                    <li>
+                      <strong>Experiments</strong> – Experiments are what you have tried but have not made it to a task or workflow use in your work yet. We are not counting or aggregating the impact of experiments - just counting the number of experiments.
+                    </li>
+                  </ol>
+                </div>
+                
+                <div className="pt-2">
+                  <p className="font-semibold text-gray-900 mb-2">We are capturing impact in 4 ways:</p>
+                  <ol className="list-decimal list-inside space-y-2 ml-2">
+                    <li>
+                      <strong>Estimated annual cost savings</strong> – Can be one time or ongoing by time period
+                    </li>
+                    <li>
+                      <strong>Estimated annual time savings</strong> – Can be one time or ongoing by time period
+                    </li>
+                    <li>
+                      <strong>Improvement in quality</strong> – We don't know how to quantify this yet so we're just counting the occurrence
+                    </li>
+                    <li>
+                      <strong>Enablement of a new capability</strong> that we did not have without AI – We don't know how to quantify this yet so we're just counting the occurrence
+                    </li>
+                  </ol>
+                </div>
+              </div>
+            </CollapsibleSection>
+
+            {/* Summary Cards */}
+            <div className="grid grid-cols-2 lg:grid-cols-5 gap-4 mb-6 mt-6">
+              <StatCard 
+                title="Total AI Methods in Use"
+                titleSub={"as of " + TODAY_DATE}
+                value={totalMethods}
+                icon={Layers} 
+                color={COLORS.primary}
+                showStackedBar={true}
+                stackData={stackData}
+              />
+              <StatCard 
+                title="Estimated Annual Cost Savings" 
+                value={formatCurrency(DASHBOARD_DATA.summary.totalAnnualCostSavings)}
+                icon={DollarSign} 
+                color={COLORS.success}
+              />
+              <StatCard 
+                title="Estimated Annual Time Savings" 
+                value={formatNumber(DASHBOARD_DATA.summary.totalHoursSaved)}
+                valueSub="hours"
+                icon={Clock} 
+                color={COLORS.primary}
+              />
+              <StatCard 
+                title="AI Methods with Quality Impact" 
+                value={DASHBOARD_DATA.summary.qualityImpactCount}
+                valueSub="Improved quality outcomes"
+                icon={Award} 
+                color={COLORS.purple}
+              />
+              <StatCard 
+                title="AI Methods with New Capability" 
+                value={DASHBOARD_DATA.summary.newCapabilityCount}
+                valueSub="Work we couldn't do before"
+                icon={Zap} 
+                color={COLORS.warning}
+              />
+            </div>
+
+            {/* Charts Row 1: Cost Savings and Time Savings by Function */}
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
+              <HorizontalBarChart 
+                data={DASHBOARD_DATA.byFunction} 
+                title="Estimated Annual Cost Savings by Function" 
+                dataKey="annualCostSavings"
+                formatter={formatCurrency}
+                color={COLORS.success}
+              />
+              <HorizontalBarChart 
+                data={DASHBOARD_DATA.byFunction} 
+                title="Estimated Annual Time Savings by Function" 
+                dataKey="hoursSaved"
+                formatter={(v) => formatNumber(v) + ' hrs'}
+                color={COLORS.primary}
+              />
+            </div>
+
+            {/* Charts Row 2: Quality Impact and New Capability by Function */}
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
+              <HorizontalBarChart 
+                data={DASHBOARD_DATA.byFunction} 
+                title="AI Methods with Quality Impact by Function" 
+                dataKey="qualityImpact"
+                color={COLORS.purple}
+              />
+              <HorizontalBarChart 
+                data={DASHBOARD_DATA.byFunction} 
+                title="AI Methods with New Capability by Function" 
+                dataKey="newCapability"
+                color={COLORS.warning}
+              />
+            </div>
+
+            {/* Charts Row 3: Total AI Methods by Function */}
+            <div className="grid grid-cols-1 gap-6 mb-8">
+              <MethodsBarChart 
+                data={DASHBOARD_DATA.byFunction} 
+                title="Total AI Methods in Use by Function"
+                subtitle={"as of " + TODAY_DATE}
+              />
+            </div>
+
+            {/* Category Cards */}
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 mb-8">
+              <CategoryCard title="Workflows" data={DASHBOARD_DATA.byCategory.workflows} color={COLORS.secondary} icon={Layers} />
+              <CategoryCard title="Tasks" data={DASHBOARD_DATA.byCategory.tasks} color={COLORS.primary} icon={CheckCircle2} />
+              <CategoryCard title="Experiments" data={DASHBOARD_DATA.byCategory.experimentation} color={COLORS.primaryLight} icon={Sparkles} />
+            </div>
+
+            {/* Charts Row: Donut Charts */}
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
+              <DonutChart data={DASHBOARD_DATA.impactTypes} title="AI Method Impact Type Distribution" />
+              <DonutChart data={DASHBOARD_DATA.byTool} title="AI Tools Used" />
+            </div>
+
+            {/* Method Types */}
+            <div className="bg-white rounded-2xl border border-gray-200 p-6 shadow-sm mb-8">
+              <h3 className="text-lg font-semibold text-gray-900 mb-4">Breakdown of Categories of AI Capabilities Used</h3>
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                {DASHBOARD_DATA.byMethodType.map((method, idx) => (
+                  <div key={idx} className="bg-gray-50 border border-gray-200 rounded-xl p-4 flex items-center gap-3">
+                    <span className="text-2xl">{method.icon}</span>
+                    <div>
+                      <p className="text-gray-900 font-semibold">{method.count}</p>
+                      <p className="text-gray-500 text-xs">{method.type}</p>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            {/* Function & Team Breakdown */}
+            <div className="bg-white rounded-2xl border border-gray-200 overflow-hidden shadow-sm">
+              <div className="px-6 py-4 border-b border-gray-200 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                <div className="flex items-center gap-3">
+                  <Building2 className="w-5 h-5" style={{ color: COLORS.primary }} />
+                  <h3 className="text-lg font-semibold text-gray-900">Breakdown by Function & Team</h3>
+                </div>
+                <div className="flex items-center gap-2 text-sm px-4 py-2 rounded-lg border" style={{ backgroundColor: COLORS.primary + '10', borderColor: COLORS.primary + '30', color: COLORS.secondary }}>
+                  <MousePointerClick className="w-4 h-4" />
+                  <span className="font-medium">Click on a function to see team details</span>
+                </div>
+              </div>
+              
+              <div className="px-6 py-3 bg-gray-50 border-b border-gray-200 flex items-center justify-between text-xs text-gray-600 uppercase tracking-wider font-medium">
+                <div className="flex items-center gap-4">
+                  <span className="w-5"></span>
+                  <span>Function</span>
+                </div>
+                <div className="flex items-center gap-6">
+                  <span className="w-16 text-center">Workflows</span>
+                  <span className="w-16 text-center">Tasks</span>
+                  <span className="w-16 text-center">Experiments</span>
+                  <span className="w-20 text-center">Cost Savings</span>
+                  <span className="w-20 text-center">Hours</span>
+                  <span className="w-12 text-center">Users</span>
+                </div>
+              </div>
+              
+              <div>
+                {DASHBOARD_DATA.byFunction.map((func) => (
+                  <FunctionRow key={func.function} data={func} teams={DASHBOARD_DATA.byTeam[func.function]} isExpanded={expandedFunctions[func.function]} onToggle={() => toggleFunction(func.function)} />
+                ))}
+              </div>
+            </div>
+
+            <div className="mt-8 text-center text-gray-500 text-sm">
+              The data in this dashboard is not real.
+            </div>
+          </div>
+        </div>
+      );
+    }
+
+    ReactDOM.createRoot(document.getElementById('root')).render(<AIDashboard />);
+  </script>
+</body>
+</html>

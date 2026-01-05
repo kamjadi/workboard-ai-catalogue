@@ -1,0 +1,711 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>AI Usage Intake Form - WorkBoard</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+  <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+  <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    body { font-family: 'DM Sans', system-ui, sans-serif; }
+  </style>
+</head>
+<body class="bg-gray-50">
+  <div id="root"></div>
+  
+  <script type="text/babel">
+    const { useState, useEffect } = React;
+
+    // Icons
+    const ChevronDown = ({ className }) => <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="m6 9 6 6 6-6"/></svg>;
+    const ChevronUp = ({ className }) => <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="m18 15-6-6-6 6"/></svg>;
+    const Check = ({ className }) => <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><polyline points="20 6 9 17 4 12"/></svg>;
+    const Send = ({ className }) => <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>;
+    const Sparkles = ({ className, style }) => <svg className={className} style={style} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="m12 3-1.912 5.813a2 2 0 0 1-1.275 1.275L3 12l5.813 1.912a2 2 0 0 1 1.275 1.275L12 21l1.912-5.813a2 2 0 0 1 1.275-1.275L21 12l-5.813-1.912a2 2 0 0 1-1.275-1.275L12 3Z"/><path d="M5 3v4"/><path d="M19 17v4"/><path d="M3 5h4"/><path d="M17 19h4"/></svg>;
+    const Info = ({ className }) => <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg>;
+    const BarChart3 = ({ className }) => <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M3 3v18h18"/><path d="M18 17V9"/><path d="M13 17V5"/><path d="M8 17v-3"/></svg>;
+    const FileText = ({ className }) => <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M14.5 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7.5L14.5 2z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><line x1="10" y1="9" x2="8" y2="9"/></svg>;
+    const ExternalLink = ({ className }) => <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>;
+    const PlusCircle = ({ className }) => <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="16"/><line x1="8" y1="12" x2="16" y2="12"/></svg>;
+    const Settings = ({ className }) => <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>;
+    const Sliders = ({ className }) => <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><line x1="4" y1="21" x2="4" y2="14"/><line x1="4" y1="10" x2="4" y2="3"/><line x1="12" y1="21" x2="12" y2="12"/><line x1="12" y1="8" x2="12" y2="3"/><line x1="20" y1="21" x2="20" y2="16"/><line x1="20" y1="12" x2="20" y2="3"/><line x1="1" y1="14" x2="7" y2="14"/><line x1="9" y1="8" x2="15" y2="8"/><line x1="17" y1="16" x2="23" y2="16"/></svg>;
+
+    // WorkBoard Color Palette
+    const COLORS = {
+      primary: '#52bad5',
+      primaryDark: '#3a9cb8',
+      primaryLight: '#7fcce3',
+      secondary: '#2d7a8c',
+      success: '#3dad7a',
+      warning: '#e8a838',
+      purple: '#7b68a6'
+    };
+
+    // Configuration
+    const CONFIG = {
+      functions: ["Sales", "Marketing", "Customer Success", "Support", "Services", "Engineering", "Product", "Finance", "HR", "Partners", "Other"],
+      teamsByFunction: {
+        "Sales": ["NA", "EMEA", "APAC", "LATAM", "Enterprise", "SMB", "Other"],
+        "Marketing": ["Brand", "Demand Gen", "Content", "Events", "Product Marketing", "Other"],
+        "Customer Success": ["Enterprise CS", "SMB CS", "Onboarding", "Renewals", "Other"],
+        "Support": ["Tier 1", "Tier 2", "Technical Support", "Customer Care", "Other"],
+        "Services": ["Implementation", "Consulting", "Training", "Solutions", "Other"],
+        "Engineering": ["Backend", "Frontend", "Platform", "DevOps", "QA", "Security", "Other"],
+        "Product": ["Core Product", "Growth", "Platform", "Analytics", "Other"],
+        "Finance": ["Accounting", "FP&A", "Revenue Ops", "Procurement", "Other"],
+        "HR": ["Recruiting", "People Ops", "L&D", "Total Rewards", "Other"],
+        "Partners": ["Channel", "Technology", "Strategic Alliances", "Other"],
+        "Other": ["Other"]
+      },
+      aiMethodTypes: [
+        { id: "workflow", label: "Workflow", description: "More than 1 task chained together" },
+        { id: "task", label: "Task", description: "Single step use of AI" },
+        { id: "experiment", label: "Experiment", description: "Tried but not yet in regular use" }
+      ],
+      aiCapabilities: [
+        { id: "drafting", label: "Drafting / Generating Text", icon: "✍️" },
+        { id: "summarizing", label: "Summarizing / Condensing", icon: "📝" },
+        { id: "analyzing", label: "Analyzing Data", icon: "📊" },
+        { id: "qa", label: "Q&A / Retrieval", icon: "🔍" },
+        { id: "coding", label: "Generating Code", icon: "💻" },
+        { id: "automation", label: "Workflow Automation", icon: "⚙️" },
+        { id: "classifying", label: "Classifying / Tagging", icon: "🏷️" },
+        { id: "vibe_coding", label: "Vibe Coding", icon: "🎯" },
+        { id: "other", label: "Other", icon: "📦" }
+      ],
+      tools: [
+        { id: "chatgpt", label: "ChatGPT", isOther: false },
+        { id: "claude", label: "Claude", isOther: false },
+        { id: "gemini", label: "Gemini", isOther: false },
+        { id: "gong", label: "Gong", isOther: false },
+        { id: "copilot", label: "Copilot", isOther: false },
+        { id: "other1", label: "Other", isOther: true },
+        { id: "other2", label: "Other", isOther: true },
+        { id: "other3", label: "Other", isOther: true }
+      ],
+      impactTypes: [
+        { id: "cost_savings", label: "Estimated Annual Cost Savings" },
+        { id: "time_savings", label: "Estimated Annual Time Savings" },
+        { id: "quality", label: "Improvement in Quality" },
+        { id: "new_capability", label: "Enablement of New Capability" }
+      ],
+      frequencies: [
+        { id: "one_time", label: "One-time" },
+        { id: "daily", label: "Daily" },
+        { id: "weekly", label: "Weekly" },
+        { id: "monthly", label: "Monthly" }
+      ],
+      timeUnits: [
+        { id: "hrs_day", label: "hours per day" },
+        { id: "hrs_week", label: "hours per week" },
+        { id: "hrs_month", label: "hours per month" },
+        { id: "hrs_occurrence", label: "hours per occurrence" }
+      ]
+    };
+
+    // Collapsible Section
+    function CollapsibleSection({ title, defaultOpen, children, icon: Icon }) {
+      const [isOpen, setIsOpen] = useState(defaultOpen);
+      return (
+        <div className="bg-white rounded-xl border border-gray-200 shadow-sm mb-4 overflow-hidden">
+          <button onClick={() => setIsOpen(!isOpen)} className="w-full px-5 py-4 flex items-center justify-between hover:bg-gray-50 transition-colors">
+            <div className="flex items-center gap-3">
+              {Icon && <Icon className="w-5 h-5" style={{ color: COLORS.primary }} />}
+              <span className="font-semibold text-gray-900">{title}</span>
+            </div>
+            {isOpen ? <ChevronUp className="w-5 h-5 text-gray-500" /> : <ChevronDown className="w-5 h-5 text-gray-500" />}
+          </button>
+          {isOpen && <div className="px-5 pb-5 border-t border-gray-100">{children}</div>}
+        </div>
+      );
+    }
+
+    // Navigation Button Component
+    function NavButton({ label, icon: Icon, isActive, onClick, disabled }) {
+      return (
+        <button
+          onClick={onClick}
+          disabled={disabled}
+          className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-all ${
+            isActive
+              ? 'text-white shadow-md'
+              : disabled
+              ? 'bg-gray-100 text-gray-400 cursor-not-allowed'
+              : 'bg-white border border-gray-200 text-gray-700 hover:bg-gray-50 hover:border-gray-300'
+          }`}
+          style={isActive ? { backgroundColor: COLORS.primary } : {}}
+        >
+          {Icon && <Icon className="w-4 h-4" />}
+          {label}
+        </button>
+      );
+    }
+
+    // Impact Section Component
+    function ImpactSection({ title, isPrimary, impact, onChange }) {
+      const handleChange = (field, value) => onChange({ ...impact, [field]: value });
+      
+      const calculateAnnualValue = () => {
+        if (impact.type === 'cost_savings' && impact.dollarsSaved && impact.frequency) {
+          const multiplier = { one_time: 1, daily: 260, weekly: 52, monthly: 12 }[impact.frequency] || 1;
+          return parseFloat(impact.dollarsSaved) * multiplier;
+        }
+        if (impact.type === 'time_savings' && impact.hoursSaved && impact.timeUnit && impact.frequency) {
+          let annualHours = parseFloat(impact.hoursSaved);
+          const freqMult = { one_time: 1, daily: 260, weekly: 52, monthly: 12 }[impact.frequency] || 1;
+          if (impact.timeUnit === 'hrs_day') annualHours *= (impact.frequency === 'daily' ? 260 : impact.frequency === 'weekly' ? 5 * 52 : 22 * 12);
+          else if (impact.timeUnit === 'hrs_week') annualHours *= (impact.frequency === 'daily' ? 260/5 : impact.frequency === 'weekly' ? 52 : 4.33 * 12);
+          else if (impact.timeUnit === 'hrs_month') annualHours *= (impact.frequency === 'daily' ? 260/22 : impact.frequency === 'weekly' ? 52/4.33 : 12);
+          else annualHours *= freqMult;
+          return annualHours;
+        }
+        return null;
+      };
+
+      const annualValue = calculateAnnualValue();
+
+      return (
+        <div className="bg-gray-50 border border-gray-200 rounded-xl p-5">
+          <h3 className="font-semibold text-gray-900 mb-4">{title}</h3>
+          
+          <div className="space-y-2 mb-4">
+            <label className="block text-sm font-medium text-gray-700">Impact Type {isPrimary && <span className="text-red-500">*</span>}</label>
+            <div className="relative">
+              <select value={impact.type} onChange={(e) => handleChange('type', e.target.value)} className="w-full appearance-none bg-white border border-gray-300 rounded-lg px-4 py-3 text-gray-900 focus:outline-none focus:ring-2 focus:border-transparent cursor-pointer" style={{ focusRing: COLORS.primary }} required={isPrimary}>
+                <option value="">Select impact type...</option>
+                {CONFIG.impactTypes.map(type => <option key={type.id} value={type.id}>{type.label}</option>)}
+              </select>
+              <ChevronDown className="absolute right-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400 pointer-events-none" />
+            </div>
+          </div>
+
+          {impact.type === 'cost_savings' && (
+            <div className="space-y-4">
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <label className="block text-sm font-medium text-gray-700">Dollar Amount Saved</label>
+                  <div className="relative">
+                    <span className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-500">$</span>
+                    <input type="number" value={impact.dollarsSaved || ''} onChange={(e) => handleChange('dollarsSaved', e.target.value)} placeholder="0" className="w-full bg-white border border-gray-300 rounded-lg pl-8 pr-4 py-3 text-gray-900 focus:outline-none focus:ring-2" style={{ focusRing: COLORS.primary }} />
+                  </div>
+                </div>
+                <div className="space-y-2">
+                  <label className="block text-sm font-medium text-gray-700">Frequency</label>
+                  <div className="relative">
+                    <select value={impact.frequency || ''} onChange={(e) => handleChange('frequency', e.target.value)} className="w-full appearance-none bg-white border border-gray-300 rounded-lg px-4 py-3 text-gray-900 focus:outline-none focus:ring-2 cursor-pointer">
+                      <option value="">Select...</option>
+                      {CONFIG.frequencies.map(f => <option key={f.id} value={f.id}>{f.label}</option>)}
+                    </select>
+                    <ChevronDown className="absolute right-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400 pointer-events-none" />
+                  </div>
+                </div>
+              </div>
+              {annualValue && (
+                <div className="p-4 rounded-lg border-2" style={{ backgroundColor: COLORS.success + '15', borderColor: COLORS.success + '40' }}>
+                  <p className="text-sm font-medium" style={{ color: COLORS.secondary }}>Estimated Annual Cost Savings</p>
+                  <p className="text-2xl font-bold" style={{ color: COLORS.success }}>${annualValue.toLocaleString()}</p>
+                </div>
+              )}
+            </div>
+          )}
+
+          {impact.type === 'time_savings' && (
+            <div className="space-y-4">
+              <div className="grid grid-cols-3 gap-4">
+                <div className="space-y-2">
+                  <label className="block text-sm font-medium text-gray-700">Hours Saved</label>
+                  <input type="number" value={impact.hoursSaved || ''} onChange={(e) => handleChange('hoursSaved', e.target.value)} placeholder="0" className="w-full bg-white border border-gray-300 rounded-lg px-4 py-3 text-gray-900 focus:outline-none focus:ring-2" />
+                </div>
+                <div className="space-y-2">
+                  <label className="block text-sm font-medium text-gray-700">Unit</label>
+                  <div className="relative">
+                    <select value={impact.timeUnit || ''} onChange={(e) => handleChange('timeUnit', e.target.value)} className="w-full appearance-none bg-white border border-gray-300 rounded-lg px-4 py-3 text-gray-900 focus:outline-none focus:ring-2 cursor-pointer">
+                      <option value="">Select...</option>
+                      {CONFIG.timeUnits.map(u => <option key={u.id} value={u.id}>{u.label}</option>)}
+                    </select>
+                    <ChevronDown className="absolute right-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400 pointer-events-none" />
+                  </div>
+                </div>
+                <div className="space-y-2">
+                  <label className="block text-sm font-medium text-gray-700">Frequency</label>
+                  <div className="relative">
+                    <select value={impact.frequency || ''} onChange={(e) => handleChange('frequency', e.target.value)} className="w-full appearance-none bg-white border border-gray-300 rounded-lg px-4 py-3 text-gray-900 focus:outline-none focus:ring-2 cursor-pointer">
+                      <option value="">Select...</option>
+                      {CONFIG.frequencies.map(f => <option key={f.id} value={f.id}>{f.label}</option>)}
+                    </select>
+                    <ChevronDown className="absolute right-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400 pointer-events-none" />
+                  </div>
+                </div>
+              </div>
+              {annualValue && (
+                <div className="p-4 rounded-lg border-2" style={{ backgroundColor: COLORS.primary + '15', borderColor: COLORS.primary + '40' }}>
+                  <p className="text-sm font-medium" style={{ color: COLORS.secondary }}>Estimated Annual Time Savings</p>
+                  <p className="text-2xl font-bold" style={{ color: COLORS.primary }}>{Math.round(annualValue).toLocaleString()} hours</p>
+                </div>
+              )}
+            </div>
+          )}
+
+          {impact.type === 'quality' && (
+            <div className="space-y-2">
+              <label className="block text-sm font-medium text-gray-700">Describe the quality improvement</label>
+              <textarea value={impact.qualityDescription || ''} onChange={(e) => handleChange('qualityDescription', e.target.value)} placeholder="How has quality improved? (e.g., fewer errors, more consistency, better accuracy...)" rows={3} className="w-full bg-white border border-gray-300 rounded-lg px-4 py-3 text-gray-900 focus:outline-none focus:ring-2 resize-none" />
+              <p className="text-xs text-gray-500 italic">Note: Quality improvements are counted but not quantified in dollar terms.</p>
+            </div>
+          )}
+
+          {impact.type === 'new_capability' && (
+            <div className="space-y-2">
+              <label className="block text-sm font-medium text-gray-700">Describe the new capability</label>
+              <textarea value={impact.capabilityDescription || ''} onChange={(e) => handleChange('capabilityDescription', e.target.value)} placeholder="What can you do now that you couldn't do before AI?" rows={3} className="w-full bg-white border border-gray-300 rounded-lg px-4 py-3 text-gray-900 focus:outline-none focus:ring-2 resize-none" />
+              <p className="text-xs text-gray-500 italic">Note: New capabilities are counted but not quantified in dollar terms.</p>
+            </div>
+          )}
+        </div>
+      );
+    }
+
+    // Main Form
+    function AIIntakeForm() {
+      const [formData, setFormData] = useState({
+        function: '', functionOther: '',
+        team: '', teamOther: '',
+        aiMethodType: '',
+        aiCapability: '', aiCapabilityOther: '',
+        description: ''
+      });
+      const [selectedTools, setSelectedTools] = useState({});
+      const [otherToolNames, setOtherToolNames] = useState({});
+      const [primaryImpact, setPrimaryImpact] = useState({ type: '' });
+      const [secondaryImpact, setSecondaryImpact] = useState({ type: '' });
+      const [tertiaryImpact, setTertiaryImpact] = useState({ type: '' });
+      const [quaternaryImpact, setQuaternaryImpact] = useState({ type: '' });
+      const [submitted, setSubmitted] = useState(false);
+      const [submitting, setSubmitting] = useState(false);
+      const [error, setError] = useState(null);
+
+      // API config state
+      const [apiConfig, setApiConfig] = useState(null);
+      const [loadingConfig, setLoadingConfig] = useState(true);
+
+      // Fetch config from API on mount
+      useEffect(() => {
+        async function fetchConfig() {
+          try {
+            const res = await fetch('/api/config');
+            const data = await res.json();
+            setApiConfig(data);
+          } catch (err) {
+            console.error('Error fetching config:', err);
+          } finally {
+            setLoadingConfig(false);
+          }
+        }
+        fetchConfig();
+      }, []);
+
+      const handleFormChange = (field, value) => {
+        setFormData(prev => {
+          const updated = { ...prev, [field]: value };
+          if (field === 'function') { updated.team = ''; updated.teamOther = ''; }
+          return updated;
+        });
+      };
+
+      // Get teams for selected function from API data
+      const getAvailableTeams = () => {
+        if (!apiConfig || !formData.function) return [];
+        const selectedFunc = apiConfig.functions.find(f => f.name === formData.function);
+        if (!selectedFunc) return [];
+        return apiConfig.teams.filter(t => t.function_id === selectedFunc.id);
+      };
+
+      const availableTeams = getAvailableTeams();
+
+      // Build impact object for API
+      const buildImpactData = (impact, prefix) => {
+        if (!impact || !impact.type) return {};
+        const data = {};
+        data[prefix + '_type'] = impact.type;
+        if (impact.type === 'cost_savings') {
+          data[prefix + '_value'] = parseFloat(impact.dollarsSaved) || 0;
+          data[prefix + '_frequency'] = impact.frequency || null;
+          const multiplier = { one_time: 1, daily: 260, weekly: 52, monthly: 12 }[impact.frequency] || 1;
+          data[prefix + '_annual_value'] = (parseFloat(impact.dollarsSaved) || 0) * multiplier;
+        } else if (impact.type === 'time_savings') {
+          data[prefix + '_value'] = parseFloat(impact.hoursSaved) || 0;
+          data[prefix + '_time_unit'] = impact.timeUnit || null;
+          data[prefix + '_frequency'] = impact.frequency || null;
+          // Calculate annual hours
+          let annualHours = parseFloat(impact.hoursSaved) || 0;
+          if (impact.timeUnit === 'hrs_day') annualHours *= 260;
+          else if (impact.timeUnit === 'hrs_week') annualHours *= 52;
+          else if (impact.timeUnit === 'hrs_month') annualHours *= 12;
+          const freqMultiplier = { one_time: 1, daily: 1, weekly: 1, monthly: 1 }[impact.frequency] || 1;
+          data[prefix + '_annual_value'] = annualHours * freqMultiplier;
+        } else {
+          data[prefix + '_description'] = impact.description || '';
+        }
+        return data;
+      };
+
+      const handleSubmit = async (e) => {
+        e.preventDefault();
+        setSubmitting(true);
+        setError(null);
+
+        try {
+          // Find IDs from API config
+          const selectedFunc = apiConfig.functions.find(f => f.name === formData.function);
+          const teamsForFunction = apiConfig.teams.filter(t => t.function_id === selectedFunc?.id);
+          const selectedTeam = teamsForFunction.length > 0
+            ? apiConfig.teams.find(t => t.name === formData.team && t.function_id === selectedFunc?.id)
+            : null;
+          const selectedCapability = apiConfig.capabilities.find(c => c.name === formData.aiCapability);
+
+          if (!selectedFunc || !selectedCapability) {
+            throw new Error('Please select valid function and capability');
+          }
+          if (teamsForFunction.length > 0 && !selectedTeam) {
+            throw new Error('Please select a team');
+          }
+
+          // Check for "Other" tools that need to be created
+          const otherToolsToCreate = [];
+          const otherToolId = apiConfig.tools.find(t => t.name.toLowerCase() === 'other')?.id;
+
+          // Validate that "Other" tools have names
+          if (otherToolId && selectedTools[otherToolId]) {
+            const otherName = otherToolNames[otherToolId]?.trim();
+            if (!otherName) {
+              throw new Error('Please enter a name for the "Other" tool');
+            }
+            otherToolsToCreate.push({ tempId: otherToolId, name: otherName });
+          }
+
+          // Create new tools and get their IDs
+          const newToolIds = {};
+          for (const toolToCreate of otherToolsToCreate) {
+            // Check if tool already exists (case-insensitive)
+            const existingTool = apiConfig.tools.find(t =>
+              t.name.toLowerCase() === toolToCreate.name.toLowerCase() && t.name.toLowerCase() !== 'other'
+            );
+
+            if (existingTool) {
+              // Tool already exists, use its ID
+              newToolIds[toolToCreate.tempId] = existingTool.id;
+            } else {
+              // Create new tool
+              const createRes = await fetch('/api/config/tools', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ name: toolToCreate.name })
+              });
+
+              if (!createRes.ok) {
+                const errData = await createRes.json();
+                throw new Error(errData.detail || 'Failed to create tool: ' + toolToCreate.name);
+              }
+
+              const newTool = await createRes.json();
+              newToolIds[toolToCreate.tempId] = newTool.id;
+            }
+          }
+
+          // Build tools_used JSON - replace "Other" tool IDs with new tool IDs
+          const toolIds = Object.entries(selectedTools)
+            .filter(([_, selected]) => selected)
+            .map(([toolId]) => {
+              const id = parseInt(toolId);
+              // If this was an "Other" tool, use the newly created tool ID
+              if (newToolIds[id]) {
+                return newToolIds[id];
+              }
+              // Skip the "Other" tool itself if we created a new one for it
+              const tool = apiConfig.tools.find(t => t.id === id);
+              if (tool && tool.name.toLowerCase() === 'other' && newToolIds[id] === undefined) {
+                return null; // Will be filtered out
+              }
+              return id;
+            })
+            .filter(id => id !== null);
+
+          // Build the API payload
+          const payload = {
+            function_id: selectedFunc.id,
+            team_id: selectedTeam ? selectedTeam.id : null,
+            method_type: formData.aiMethodType,
+            capability_id: selectedCapability.id,
+            capability_other: formData.aiCapability === 'Other' ? formData.aiCapabilityOther : null,
+            description: formData.description,
+            tools_used: JSON.stringify(toolIds),
+            other_tools: JSON.stringify([]), // No longer needed since we create tools
+            ...buildImpactData(primaryImpact, 'impact1'),
+            ...buildImpactData(secondaryImpact, 'impact2'),
+            ...buildImpactData(tertiaryImpact, 'impact3'),
+            ...buildImpactData(quaternaryImpact, 'impact4')
+          };
+
+          const response = await fetch('/api/responses', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(payload)
+          });
+
+          if (!response.ok) {
+            const errData = await response.json();
+            throw new Error(errData.detail || 'Failed to submit');
+          }
+
+          setSubmitted(true);
+        } catch (err) {
+          setError(err.message);
+        } finally {
+          setSubmitting(false);
+        }
+      };
+
+      if (loadingConfig) {
+        return (
+          <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+            <div className="text-gray-500">Loading form configuration...</div>
+          </div>
+        );
+      }
+
+      if (submitted) {
+        return (
+          <div className="min-h-screen bg-gray-50 flex items-center justify-center p-6">
+            <div className="bg-white rounded-2xl border border-gray-200 p-8 max-w-md text-center shadow-sm">
+              <div className="w-16 h-16 rounded-full mx-auto mb-4 flex items-center justify-center" style={{ backgroundColor: COLORS.success + '20' }}>
+                <Check className="w-8 h-8" style={{ color: COLORS.success }} />
+              </div>
+              <h2 className="text-2xl font-bold text-gray-900 mb-2">Thank You!</h2>
+              <p className="text-gray-600 mb-6">Your AI usage has been recorded successfully.</p>
+              <button onClick={() => { setSubmitted(false); setFormData({ function: '', functionOther: '', team: '', teamOther: '', aiMethodType: '', aiCapability: '', aiCapabilityOther: '', description: '' }); setSelectedTools({}); setOtherToolNames({}); setPrimaryImpact({ type: '' }); setSecondaryImpact({ type: '' }); setTertiaryImpact({ type: '' }); setQuaternaryImpact({ type: '' }); }} className="px-6 py-3 rounded-xl font-semibold text-white transition-all" style={{ backgroundColor: COLORS.primary }}>
+                Submit Another
+              </button>
+            </div>
+          </div>
+        );
+      }
+
+      return (
+        <div className="min-h-screen bg-gray-50">
+          <div className="max-w-3xl mx-auto px-6 py-8">
+            {/* Header */}
+            <div className="mb-6">
+              <div className="flex items-center gap-3 mb-2">
+                <div className="w-10 h-10 rounded-xl flex items-center justify-center" style={{ background: 'linear-gradient(135deg, ' + COLORS.primary + ', ' + COLORS.secondary + ')' }}>
+                  <Sparkles className="w-5 h-5 text-white" />
+                </div>
+                <h1 className="text-2xl font-bold text-gray-900">AI Usage Intake Form</h1>
+              </div>
+              <p className="text-gray-600">Enter one workflow, task, or experiment at a time.</p>
+              <p className="text-gray-500 text-sm mt-1">Your responses help build a comprehensive view of AI adoption across the organization.</p>
+            </div>
+
+            {/* Navigation Buttons */}
+            <div className="flex flex-wrap gap-3 mb-6">
+              <NavButton
+                label="Overview"
+                icon={BarChart3}
+                isActive={false}
+                onClick={() => window.location.href = '/'}
+              />
+              <NavButton
+                label="Instructions"
+                icon={FileText}
+                isActive={false}
+                onClick={() => window.location.href = '/instructions'}
+              />
+              <NavButton
+                label="Live Dashboard"
+                icon={ExternalLink}
+                isActive={false}
+                onClick={() => window.location.href = '/dashboard'}
+              />
+              <NavButton
+                label="Enter Your AI Use Cases"
+                icon={PlusCircle}
+                isActive={true}
+                onClick={() => window.location.href = '/form'}
+              />
+              <NavButton
+                label="Manage Entries"
+                icon={Settings}
+                isActive={false}
+                onClick={() => window.location.href = '/admin'}
+              />
+              <NavButton
+                label="Configuration"
+                icon={Sliders}
+                isActive={false}
+                onClick={() => window.location.href = '/config'}
+              />
+            </div>
+
+            <form onSubmit={handleSubmit} className="space-y-6">
+              {/* Section 1: Organization */}
+              <div className="bg-white rounded-2xl border border-gray-200 p-6 shadow-sm">
+                <h2 className="text-lg font-semibold text-gray-900 mb-4 flex items-center gap-3">
+                  <span className="w-7 h-7 rounded-lg flex items-center justify-center text-white text-sm font-bold" style={{ backgroundColor: COLORS.primary }}>1</span>
+                  Organization
+                </h2>
+                <div className="grid sm:grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <label className="block text-sm font-medium text-gray-700">Function <span className="text-red-500">*</span></label>
+                    <div className="relative">
+                      <select value={formData.function} onChange={(e) => handleFormChange('function', e.target.value)} className="w-full appearance-none bg-white border border-gray-300 rounded-lg px-4 py-3 text-gray-900 focus:outline-none focus:ring-2 cursor-pointer" required>
+                        <option value="">Select a function...</option>
+                        {(apiConfig?.functions || []).map(func => <option key={func.id} value={func.name}>{func.name}</option>)}
+                      </select>
+                      <ChevronDown className="absolute right-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400 pointer-events-none" />
+                    </div>
+                    {formData.function === 'Other' && <input type="text" value={formData.functionOther} onChange={(e) => handleFormChange('functionOther', e.target.value)} placeholder="Specify function..." className="w-full mt-2 bg-white border border-gray-300 rounded-lg px-4 py-3 text-gray-900" required />}
+                  </div>
+                  <div className="space-y-2">
+                    <label className="block text-sm font-medium text-gray-700">Team {availableTeams.length > 0 && <span className="text-red-500">*</span>}</label>
+                    {formData.function && availableTeams.length === 0 ? (
+                      <div className="w-full bg-gray-100 border border-gray-300 rounded-lg px-4 py-3 text-gray-500 cursor-not-allowed">
+                        No team selection required
+                      </div>
+                    ) : (
+                      <div className="relative">
+                        <select value={formData.team} onChange={(e) => handleFormChange('team', e.target.value)} className="w-full appearance-none bg-white border border-gray-300 rounded-lg px-4 py-3 text-gray-900 focus:outline-none focus:ring-2 cursor-pointer disabled:bg-gray-100 disabled:text-gray-500" disabled={!formData.function} required={availableTeams.length > 0}>
+                          <option value="">{formData.function ? 'Select a team...' : 'Select function first...'}</option>
+                          {availableTeams.map(team => <option key={team.id} value={team.name}>{team.name}</option>)}
+                        </select>
+                        <ChevronDown className="absolute right-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400 pointer-events-none" />
+                      </div>
+                    )}
+                    {formData.team === 'Other' && <input type="text" value={formData.teamOther} onChange={(e) => handleFormChange('teamOther', e.target.value)} placeholder="Specify team..." className="w-full mt-2 bg-white border border-gray-300 rounded-lg px-4 py-3 text-gray-900" required />}
+                  </div>
+                </div>
+              </div>
+
+              {/* Section 2: AI Method */}
+              <div className="bg-white rounded-2xl border border-gray-200 p-6 shadow-sm">
+                <h2 className="text-lg font-semibold text-gray-900 mb-4 flex items-center gap-3">
+                  <span className="w-7 h-7 rounded-lg flex items-center justify-center text-white text-sm font-bold" style={{ backgroundColor: COLORS.secondary }}>2</span>
+                  AI Method
+                </h2>
+                <div className="space-y-4">
+                  <div className="space-y-2">
+                    <label className="block text-sm font-medium text-gray-700">AI Method Type <span className="text-red-500">*</span></label>
+                    <div className="grid sm:grid-cols-3 gap-3">
+                      {CONFIG.aiMethodTypes.map(type => (
+                        <button key={type.id} type="button" onClick={() => handleFormChange('aiMethodType', type.id)} className={`p-4 rounded-xl border-2 text-left transition-all ${formData.aiMethodType === type.id ? 'border-2' : 'border-gray-200 hover:border-gray-300'}`} style={formData.aiMethodType === type.id ? { borderColor: COLORS.primary, backgroundColor: COLORS.primary + '10' } : {}}>
+                          <p className="font-semibold text-gray-900">{type.label}</p>
+                          <p className="text-xs text-gray-500 mt-1">{type.description}</p>
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                  <div className="space-y-2">
+                    <label className="block text-sm font-medium text-gray-700">AI Capability Category <span className="text-red-500">*</span></label>
+                    <div className="relative">
+                      <select value={formData.aiCapability} onChange={(e) => handleFormChange('aiCapability', e.target.value)} className="w-full appearance-none bg-white border border-gray-300 rounded-lg px-4 py-3 text-gray-900 focus:outline-none focus:ring-2 cursor-pointer" required>
+                        <option value="">Select AI capability...</option>
+                        {(apiConfig?.capabilities || []).map(cap => <option key={cap.id} value={cap.name}>{cap.name}</option>)}
+                      </select>
+                      <ChevronDown className="absolute right-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400 pointer-events-none" />
+                    </div>
+                    {formData.aiCapability === 'other' && <input type="text" value={formData.aiCapabilityOther} onChange={(e) => handleFormChange('aiCapabilityOther', e.target.value)} placeholder="Describe the AI capability..." className="w-full mt-2 bg-white border border-gray-300 rounded-lg px-4 py-3 text-gray-900" required />}
+                  </div>
+                  <div className="space-y-2">
+                    <label className="block text-sm font-medium text-gray-700">Description <span className="text-red-500">*</span></label>
+                    <textarea value={formData.description} onChange={(e) => handleFormChange('description', e.target.value)} placeholder="Describe what this AI method does and how you use it..." rows={3} className="w-full bg-white border border-gray-300 rounded-lg px-4 py-3 text-gray-900 resize-none" required />
+                  </div>
+                </div>
+              </div>
+
+              {/* Section 3: Tools */}
+              <div className="bg-white rounded-2xl border border-gray-200 p-6 shadow-sm">
+                <h2 className="text-lg font-semibold text-gray-900 mb-4 flex items-center gap-3">
+                  <span className="w-7 h-7 rounded-lg flex items-center justify-center text-white text-sm font-bold" style={{ backgroundColor: COLORS.primaryLight }}>3</span>
+                  AI Tools Used
+                </h2>
+                <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-5 gap-3">
+                  {(apiConfig?.tools || []).map((tool) => {
+                    const isOtherTool = tool.name.toLowerCase() === 'other';
+                    return (
+                      <div key={tool.id} className="space-y-2">
+                        <button type="button" onClick={() => setSelectedTools(prev => ({ ...prev, [tool.id]: !prev[tool.id] }))} className={`w-full flex items-center justify-center gap-2 px-3 py-3 rounded-xl border-2 transition-all text-center ${selectedTools[tool.id] ? '' : 'border-gray-200 hover:border-gray-300'}`} style={selectedTools[tool.id] ? { borderColor: COLORS.primary, backgroundColor: COLORS.primary + '10' } : {}}>
+                          <div className={`w-4 h-4 rounded flex items-center justify-center border-2 flex-shrink-0 ${selectedTools[tool.id] ? '' : 'border-gray-300'}`} style={selectedTools[tool.id] ? { backgroundColor: COLORS.primary, borderColor: COLORS.primary } : {}}>
+                            {selectedTools[tool.id] && <Check className="w-2.5 h-2.5 text-white" />}
+                          </div>
+                          <span className="font-medium text-gray-700 text-sm">{tool.name}</span>
+                        </button>
+                        {isOtherTool && selectedTools[tool.id] && (
+                          <input
+                            type="text"
+                            value={otherToolNames[tool.id] || ''}
+                            onChange={(e) => setOtherToolNames(prev => ({ ...prev, [tool.id]: e.target.value }))}
+                            placeholder="Enter tool name (required)..."
+                            className="w-full bg-white border border-gray-300 rounded-lg px-3 py-2 text-gray-900 text-sm"
+                            required
+                          />
+                        )}
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+
+              {/* Section 4: Impact - Hidden for Experiments */}
+              {formData.aiMethodType !== 'experiment' && (
+                <div className="bg-white rounded-2xl border border-gray-200 p-6 shadow-sm">
+                  <h2 className="text-lg font-semibold text-gray-900 mb-4 flex items-center gap-3">
+                    <span className="w-7 h-7 rounded-lg flex items-center justify-center text-white text-sm font-bold" style={{ backgroundColor: COLORS.success }}>4</span>
+                    Impact
+                  </h2>
+                  <div className="space-y-4">
+                    <ImpactSection title="Primary Impact" isPrimary={true} impact={primaryImpact} onChange={setPrimaryImpact} />
+                    <ImpactSection title="Secondary Impact (Optional)" isPrimary={false} impact={secondaryImpact} onChange={setSecondaryImpact} />
+                    <ImpactSection title="Third Impact (Optional)" isPrimary={false} impact={tertiaryImpact} onChange={setTertiaryImpact} />
+                    <ImpactSection title="Fourth Impact (Optional)" isPrimary={false} impact={quaternaryImpact} onChange={setQuaternaryImpact} />
+                  </div>
+                </div>
+              )}
+
+              {/* Experiment Notice */}
+              {formData.aiMethodType === 'experiment' && (
+                <div className="bg-gray-100 rounded-2xl border border-gray-200 p-6">
+                  <p className="text-gray-600 text-center">
+                    <span className="font-medium">Note:</span> Impact tracking is not required for experiments. We are only counting the number of experiments at this time.
+                  </p>
+                </div>
+              )}
+
+              {/* Error Message */}
+              {error && (
+                <div className="bg-red-50 border border-red-200 rounded-xl p-4 text-red-700">
+                  <strong>Error:</strong> {error}
+                </div>
+              )}
+
+              {/* Submit */}
+              <div className="flex justify-end">
+                <button type="submit" disabled={submitting} className="group inline-flex items-center gap-3 px-8 py-4 text-white rounded-xl font-semibold text-lg shadow-lg transition-all hover:opacity-90 disabled:opacity-50 disabled:cursor-not-allowed" style={{ backgroundColor: COLORS.primary }}>
+                  {submitting ? 'Submitting...' : 'Submit AI Usage'}
+                  {!submitting && <Send className="w-5 h-5 group-hover:translate-x-0.5 transition-transform" />}
+                </button>
+              </div>
+            </form>
+
+            <div className="mt-8 text-center text-gray-400 text-sm">
+              WorkBoard AI Usage Catalogue
+            </div>
+          </div>
+        </div>
+      );
+    }
+
+    ReactDOM.createRoot(document.getElementById('root')).render(<AIIntakeForm />);
+  </script>
+</body>
+</html>
