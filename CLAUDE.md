@@ -409,6 +409,67 @@ When ready for internal deployment:
 3. **Hosting:** Docker container, can run on any server
 4. **Data:** All data in single SQLite file, easy to backup/migrate
 
+## Concurrency & Multi-User Considerations
+
+### Current Behavior (as of Jan 2026)
+
+**What's handled by SQLite:**
+- **Concurrent inserts:** SQLite uses file-level locking. Multiple users submitting new entries will queue and process sequentially. No data loss.
+- **Read consistency:** Each read operation gets a consistent snapshot of the data.
+
+**Known limitations (acceptable for low-traffic internal tool):**
+
+1. **Lost Updates (not protected):**
+   - User A opens entry #5 for editing
+   - User B opens entry #5 for editing
+   - User A saves changes
+   - User B saves changes → overwrites User A's changes silently
+   - *Risk: Low for internal tool where users typically edit their own entries*
+
+2. **Delete while editing:**
+   - User A editing entry #5, User B deletes it
+   - User A tries to save → gets 404 error
+   - *Handled but not graceful UX*
+
+3. **Stale dashboard data:**
+   - Dashboard doesn't auto-refresh when others add entries
+   - Users must manually refresh
+   - *Acceptable for this use case*
+
+### Future Enhancement: Optimistic Locking
+
+If concurrent edit collisions become an issue, implement optimistic locking:
+
+1. **Database change:**
+   ```sql
+   ALTER TABLE responses ADD COLUMN version INTEGER DEFAULT 1;
+   -- Or use updated_at timestamp
+   ```
+
+2. **API change (PUT /api/responses/{id}):**
+   ```python
+   # Check version matches before update
+   if existing['version'] != request.version:
+       raise HTTPException(409, "Entry was modified by another user. Please refresh and try again.")
+   # Increment version on successful update
+   UPDATE responses SET ..., version = version + 1 WHERE id = ? AND version = ?
+   ```
+
+3. **Frontend change:**
+   - Include `version` in edit form state
+   - Send `version` with update request
+   - Show user-friendly error if version mismatch
+
+**Estimated effort:** ~2-4 hours
+
+### Alternative: PostgreSQL Migration
+
+For higher concurrency needs, migrate to PostgreSQL which offers:
+- Row-level locking
+- Better concurrent write performance
+- MVCC (Multi-Version Concurrency Control)
+- Advisory locks for complex scenarios
+
 ## Reference Files
 
 The original UI files created in Claude.ai are:
