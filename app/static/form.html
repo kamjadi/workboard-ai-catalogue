@@ -293,19 +293,21 @@
       const [apiConfig, setApiConfig] = useState(null);
       const [loadingConfig, setLoadingConfig] = useState(true);
 
-      // Fetch config from API on mount
-      useEffect(() => {
-        async function fetchConfig() {
-          try {
-            const res = await fetch('/api/config');
-            const data = await res.json();
-            setApiConfig(data);
-          } catch (err) {
-            console.error('Error fetching config:', err);
-          } finally {
-            setLoadingConfig(false);
-          }
+      // Fetch config from API
+      const fetchConfig = async () => {
+        try {
+          const res = await fetch('/api/config');
+          const data = await res.json();
+          setApiConfig(data);
+        } catch (err) {
+          console.error('Error fetching config:', err);
+        } finally {
+          setLoadingConfig(false);
         }
+      };
+
+      // Fetch config on mount
+      useEffect(() => {
         fetchConfig();
       }, []);
 
@@ -525,7 +527,7 @@
               </div>
               <h2 className="text-2xl font-bold text-gray-900 mb-2">Thank You!</h2>
               <p className="text-gray-600 mb-6">Your AI usage has been recorded successfully.</p>
-              <button onClick={() => { setSubmitted(false); setFormData({ function: '', functionOther: '', team: '', teamOther: '', aiMethodType: '', aiCapability: '', aiCapabilityOther: '', description: '' }); setSelectedTools({}); setOtherToolNames({}); setSelectedCapability(null); setOtherCapabilityName(''); setPrimaryImpact({ type: '' }); setSecondaryImpact({ type: '' }); setTertiaryImpact({ type: '' }); setQuaternaryImpact({ type: '' }); }} className="px-6 py-3 rounded-xl font-semibold text-white transition-all" style={{ backgroundColor: COLORS.primary }}>
+              <button onClick={() => { fetchConfig(); setSubmitted(false); setFormData({ function: '', functionOther: '', team: '', teamOther: '', aiMethodType: '', aiCapability: '', aiCapabilityOther: '', description: '' }); setSelectedTools({}); setOtherToolNames({}); setSelectedCapability(null); setOtherCapabilityName(''); setPrimaryImpact({ type: '' }); setSecondaryImpact({ type: '' }); setTertiaryImpact({ type: '' }); setQuaternaryImpact({ type: '' }); }} className="px-6 py-3 rounded-xl font-semibold text-white transition-all" style={{ backgroundColor: COLORS.primary }}>
                 Submit Another
               </button>
             </div>
