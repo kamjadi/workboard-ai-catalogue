@@ -140,14 +140,16 @@
         if (entry) {
           setFormData({
             function_id: entry.function_id,
-            team_id: entry.team_id,
+            team_id: entry.team_id || null,
             method_type: entry.method_type,
             capability_id: entry.capability_id,
             description: entry.description || '',
-            impact1_type: entry.impact1_type || '',
-            impact1_value: entry.impact1_value || '',
-            impact1_frequency: entry.impact1_frequency || '',
-            impact1_annual_value: entry.impact1_annual_value || '',
+            // Keep impact fields as null if not set (don't convert to empty string)
+            impact1_type: entry.impact1_type || null,
+            impact1_value: entry.impact1_value || null,
+            impact1_frequency: entry.impact1_frequency || null,
+            impact1_time_unit: entry.impact1_time_unit || null,
+            impact1_annual_value: entry.impact1_annual_value || null,
             impact1_description: entry.impact1_description || ''
           });
         }
@@ -174,21 +176,35 @@
         setSaving(true);
         setError(null);
         try {
-          // Clean up formData - convert empty strings to null for optional fields
+          // Clean up formData - convert empty strings and NaN to null for optional fields
           const cleanedData = { ...formData };
-          ['impact1_type', 'impact1_value', 'impact1_frequency', 'impact1_annual_value', 'impact1_description',
-           'impact2_type', 'impact2_value', 'impact2_frequency', 'impact2_annual_value', 'impact2_description',
-           'impact3_type', 'impact3_value', 'impact3_frequency', 'impact3_annual_value', 'impact3_description',
-           'impact4_type', 'impact4_value', 'impact4_frequency', 'impact4_annual_value', 'impact4_description'
-          ].forEach(field => {
-            if (cleanedData[field] === '' || cleanedData[field] === undefined) {
+
+          // Clean numeric fields - handle NaN from parseInt('')
+          ['function_id', 'team_id', 'capability_id'].forEach(field => {
+            if (cleanedData[field] === '' || cleanedData[field] === undefined ||
+                (typeof cleanedData[field] === 'number' && isNaN(cleanedData[field]))) {
               cleanedData[field] = null;
             }
           });
-          // Also clean team_id if empty
-          if (cleanedData.team_id === '' || cleanedData.team_id === undefined) {
-            cleanedData.team_id = null;
-          }
+
+          // Clean impact fields - empty strings and NaN to null
+          ['impact1_type', 'impact1_value', 'impact1_frequency', 'impact1_time_unit', 'impact1_annual_value', 'impact1_description',
+           'impact2_type', 'impact2_value', 'impact2_frequency', 'impact2_time_unit', 'impact2_annual_value', 'impact2_description',
+           'impact3_type', 'impact3_value', 'impact3_frequency', 'impact3_time_unit', 'impact3_annual_value', 'impact3_description',
+           'impact4_type', 'impact4_value', 'impact4_frequency', 'impact4_time_unit', 'impact4_annual_value', 'impact4_description'
+          ].forEach(field => {
+            if (cleanedData[field] === '' || cleanedData[field] === undefined ||
+                (typeof cleanedData[field] === 'number' && isNaN(cleanedData[field]))) {
+              cleanedData[field] = null;
+            }
+          });
+
+          // Remove any fields that are still NaN (safety check)
+          Object.keys(cleanedData).forEach(key => {
+            if (typeof cleanedData[key] === 'number' && isNaN(cleanedData[key])) {
+              cleanedData[key] = null;
+            }
+          });
 
           const response = await fetch(`/api/responses/${entry.id}`, {
             method: 'PUT',
@@ -255,7 +271,7 @@
                   <div className="relative">
                     <select
                       value={formData.team_id || ''}
-                      onChange={(e) => handleChange('team_id', parseInt(e.target.value))}
+                      onChange={(e) => handleChange('team_id', e.target.value ? parseInt(e.target.value) : null)}
                       className="w-full appearance-none bg-white border border-gray-300 rounded-lg px-4 py-2.5 text-gray-900 focus:outline-none focus:ring-2"
                     >
                       <option value="">Select team...</option>
@@ -326,7 +342,7 @@
                       <div className="relative">
                         <select
                           value={formData.impact1_type || ''}
-                          onChange={(e) => handleChange('impact1_type', e.target.value)}
+                          onChange={(e) => handleChange('impact1_type', e.target.value || null)}
                           className="w-full appearance-none bg-white border border-gray-300 rounded-lg px-4 py-2.5 text-gray-900 focus:outline-none focus:ring-2"
                         >
                           <option value="">Select type...</option>
@@ -357,7 +373,7 @@
                           <div className="relative">
                             <select
                               value={formData.impact1_frequency || ''}
-                              onChange={(e) => handleChange('impact1_frequency', e.target.value)}
+                              onChange={(e) => handleChange('impact1_frequency', e.target.value || null)}
                               className="w-full appearance-none bg-white border border-gray-300 rounded-lg px-4 py-2.5 text-gray-900 focus:outline-none focus:ring-2"
                             >
                               <option value="">Select frequency...</option>
