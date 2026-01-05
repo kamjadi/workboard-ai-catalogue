@@ -2,7 +2,9 @@ import sqlite3
 import os
 from pathlib import Path
 
-DATABASE_PATH = Path(__file__).parent.parent / "data" / "database.db"
+# Database path - use DATABASE_DIR env var for Railway volume, fallback to local ./data
+DATABASE_DIR = os.environ.get("DATABASE_DIR", str(Path(__file__).parent.parent / "data"))
+DATABASE_PATH = Path(DATABASE_DIR) / "database.db"
 
 
 def get_db_connection():
