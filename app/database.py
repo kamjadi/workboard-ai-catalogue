@@ -165,8 +165,8 @@ def seed_sample_data():
                     (func_id, team_name)
                 )
 
-    # Sample tools
-    tools = ["ChatGPT", "Claude", "Gemini", "Gong", "Copilot"]
+    # Sample tools (Other should always be last and is a special entry for custom tools)
+    tools = ["ChatGPT", "Claude", "Gemini", "Gong", "Copilot", "Other"]
     for tool in tools:
         cursor.execute("INSERT OR IGNORE INTO tools (name) VALUES (?)", (tool,))
 

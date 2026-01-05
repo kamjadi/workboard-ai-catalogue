@@ -11,6 +11,35 @@
   <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
   <style>
     body { font-family: 'DM Sans', system-ui, sans-serif; }
+    /* Custom fast tooltips */
+    .tooltip-wrapper {
+      position: relative;
+    }
+    .tooltip-wrapper::after {
+      content: attr(data-tooltip);
+      position: absolute;
+      bottom: 100%;
+      left: 50%;
+      transform: translateX(-50%);
+      padding: 6px 10px;
+      background: #1f2937;
+      color: white;
+      font-size: 12px;
+      font-weight: 500;
+      border-radius: 6px;
+      white-space: nowrap;
+      opacity: 0;
+      visibility: hidden;
+      transition: opacity 0.15s, visibility 0.15s;
+      pointer-events: none;
+      margin-bottom: 6px;
+      z-index: 50;
+    }
+    .tooltip-wrapper:hover::after {
+      opacity: 1;
+      visibility: visible;
+      transition-delay: 0.2s;
+    }
   </style>
 </head>
 <body class="bg-gray-50">
@@ -154,23 +183,25 @@
     const formatNumber = (value) => new Intl.NumberFormat('en-US').format(value);
 
     // Navigation Button
-    function NavButton({ label, icon: Icon, isActive, onClick, disabled }) {
+    function NavButton({ label, icon: Icon, isActive, onClick, disabled, tooltip }) {
       return (
-        <button 
-          onClick={onClick}
-          disabled={disabled}
-          className={`flex items-center gap-2 px-4 py-2 rounded-lg font-medium text-sm transition-all ${
-            isActive 
-              ? 'text-white shadow-md' 
-              : disabled 
-                ? 'bg-gray-100 text-gray-400 cursor-not-allowed'
-                : 'bg-white text-gray-700 border border-gray-300 hover:bg-gray-50 hover:border-gray-400'
-          }`}
-          style={isActive ? { backgroundColor: COLORS.primary } : {}}
-        >
-          <Icon className="w-4 h-4" />
-          {label}
-        </button>
+        <div className="tooltip-wrapper" data-tooltip={tooltip}>
+          <button
+            onClick={onClick}
+            disabled={disabled}
+            className={`flex items-center gap-2 px-4 py-2 rounded-lg font-medium text-sm transition-all ${
+              isActive
+                ? 'text-white shadow-md'
+                : disabled
+                  ? 'bg-gray-100 text-gray-400 cursor-not-allowed'
+                  : 'bg-white text-gray-700 border border-gray-300 hover:bg-gray-50 hover:border-gray-400'
+            }`}
+            style={isActive ? { backgroundColor: COLORS.primary } : {}}
+          >
+            <Icon className="w-4 h-4" />
+            {label}
+          </button>
+        </div>
       );
     }
 
@@ -473,7 +504,7 @@
                     <th className="text-center py-2">Tasks</th>
                     <th className="text-center py-2">Experiments</th>
                     <th className="text-center py-2">Cost Savings</th>
-                    <th className="text-center py-2">Hours Saved</th>
+                    <th className="text-center py-2">Time Savings</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -642,9 +673,7 @@
             {/* Header */}
             <div className="mb-6">
               <div className="flex items-center gap-3 mb-2">
-                <div className="w-10 h-10 rounded-xl flex items-center justify-center" style={{ background: 'linear-gradient(135deg, ' + COLORS.primary + ', ' + COLORS.secondary + ')' }}>
-                  <Sparkles className="w-5 h-5 text-white" />
-                </div>
+                <img src="/static/logo/workboard-logo-icon.png" className="h-10 w-auto" alt="WorkBoard" />
                 <h1 className="text-2xl font-bold text-gray-900">WorkBoard's Internal AI Usage and Impact Catalogue (v1.0)</h1>
               </div>
             </div>
@@ -656,36 +685,42 @@
                 icon={BarChart3}
                 isActive={false}
                 onClick={() => window.location.href = '/'}
+                tooltip="Preview dashboard with sample data"
               />
               <NavButton
                 label="Instructions"
                 icon={FileText}
                 isActive={false}
                 onClick={() => window.location.href = '/instructions'}
+                tooltip="Learn how to fill out the form"
               />
               <NavButton
                 label="Live Dashboard"
                 icon={ExternalLink}
                 isActive={true}
                 onClick={() => window.location.href = '/dashboard'}
+                tooltip="View WorkBoard's AI Usage and Impact Dashboard"
               />
               <NavButton
                 label="Enter Your AI Use Cases"
                 icon={PlusCircle}
                 isActive={false}
                 onClick={() => window.location.href = '/form'}
+                tooltip="Submit your AI workflows, tasks, and experiments"
               />
               <NavButton
                 label="Manage Entries"
                 icon={Settings}
                 isActive={false}
                 onClick={() => window.location.href = '/admin'}
+                tooltip="Edit or delete submitted entries"
               />
               <NavButton
                 label="Configuration"
                 icon={Sliders}
                 isActive={false}
                 onClick={() => window.location.href = '/config'}
+                tooltip="Edit functions, teams, AI tools and AI capabilities"
               />
             </div>
 
@@ -785,8 +820,8 @@
               <CategoryCard title="Experiments" data={byCategory.experimentation} color={COLORS.primaryLight} icon={Sparkles} isExperiment={true} />
             </div>
 
-            {/* Charts Row: Impact Types, Tools Used, Capabilities */}
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
+            {/* Charts Row: Impact Types and Tools Used */}
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
               <DonutChart
                 data={impactTypesData}
                 title="AI Method Impact Type Distribution"
@@ -795,6 +830,10 @@
                 data={toolsUsedData}
                 title="AI Tools Used"
               />
+            </div>
+
+            {/* AI Capabilities Used - Full Width */}
+            <div className="mb-8">
               <CapabilitiesChart
                 data={capabilitiesData}
                 title="AI Capabilities Used"
@@ -824,7 +863,7 @@
                   <span className="w-16 text-center">Tasks</span>
                   <span className="w-16 text-center">Experiments</span>
                   <span className="w-20 text-center">Cost Savings</span>
-                  <span className="w-20 text-center">Hours</span>
+                  <span className="w-20 text-center">Time Savings</span>
                 </div>
               </div>
 

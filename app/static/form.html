@@ -1,4 +1,5 @@
 <!DOCTYPE html>
+<!-- VERSION: 2026-01-04-v2-buttons-fixed -->
 <html lang="en">
 <head>
   <meta charset="UTF-8">
@@ -11,6 +12,35 @@
   <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
   <style>
     body { font-family: 'DM Sans', system-ui, sans-serif; }
+    /* Custom fast tooltips */
+    .tooltip-wrapper {
+      position: relative;
+    }
+    .tooltip-wrapper::after {
+      content: attr(data-tooltip);
+      position: absolute;
+      bottom: 100%;
+      left: 50%;
+      transform: translateX(-50%);
+      padding: 6px 10px;
+      background: #1f2937;
+      color: white;
+      font-size: 12px;
+      font-weight: 500;
+      border-radius: 6px;
+      white-space: nowrap;
+      opacity: 0;
+      visibility: hidden;
+      transition: opacity 0.15s, visibility 0.15s;
+      pointer-events: none;
+      margin-bottom: 6px;
+      z-index: 50;
+    }
+    .tooltip-wrapper:hover::after {
+      opacity: 1;
+      visibility: visible;
+      transition-delay: 0.2s;
+    }
   </style>
 </head>
 <body class="bg-gray-50">
@@ -124,23 +154,25 @@
     }
 
     // Navigation Button Component
-    function NavButton({ label, icon: Icon, isActive, onClick, disabled }) {
+    function NavButton({ label, icon: Icon, isActive, onClick, disabled, tooltip }) {
       return (
-        <button
-          onClick={onClick}
-          disabled={disabled}
-          className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-all ${
-            isActive
-              ? 'text-white shadow-md'
-              : disabled
-              ? 'bg-gray-100 text-gray-400 cursor-not-allowed'
-              : 'bg-white border border-gray-200 text-gray-700 hover:bg-gray-50 hover:border-gray-300'
-          }`}
-          style={isActive ? { backgroundColor: COLORS.primary } : {}}
-        >
-          {Icon && <Icon className="w-4 h-4" />}
-          {label}
-        </button>
+        <div className="tooltip-wrapper" data-tooltip={tooltip}>
+          <button
+            onClick={onClick}
+            disabled={disabled}
+            className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-all ${
+              isActive
+                ? 'text-white shadow-md'
+                : disabled
+                ? 'bg-gray-100 text-gray-400 cursor-not-allowed'
+                : 'bg-white border border-gray-200 text-gray-700 hover:bg-gray-50 hover:border-gray-300'
+            }`}
+            style={isActive ? { backgroundColor: COLORS.primary } : {}}
+          >
+            {Icon && <Icon className="w-4 h-4" />}
+            {label}
+          </button>
+        </div>
       );
     }
 
@@ -527,9 +559,14 @@
               </div>
               <h2 className="text-2xl font-bold text-gray-900 mb-2">Thank You!</h2>
               <p className="text-gray-600 mb-6">Your AI usage has been recorded successfully.</p>
-              <button onClick={() => { fetchConfig(); setSubmitted(false); setFormData({ function: '', functionOther: '', team: '', teamOther: '', aiMethodType: '', aiCapability: '', aiCapabilityOther: '', description: '' }); setSelectedTools({}); setOtherToolNames({}); setSelectedCapability(null); setOtherCapabilityName(''); setPrimaryImpact({ type: '' }); setSecondaryImpact({ type: '' }); setTertiaryImpact({ type: '' }); setQuaternaryImpact({ type: '' }); }} className="px-6 py-3 rounded-xl font-semibold text-white transition-all" style={{ backgroundColor: COLORS.primary }}>
-                Submit Another
-              </button>
+              <div className="flex flex-col sm:flex-row gap-3 justify-center">
+                <button onClick={() => { fetchConfig(); setSubmitted(false); setFormData({ function: '', functionOther: '', team: '', teamOther: '', aiMethodType: '', aiCapability: '', aiCapabilityOther: '', description: '' }); setSelectedTools({}); setOtherToolNames({}); setSelectedCapability(null); setOtherCapabilityName(''); setPrimaryImpact({ type: '' }); setSecondaryImpact({ type: '' }); setTertiaryImpact({ type: '' }); setQuaternaryImpact({ type: '' }); }} className="px-6 py-3 rounded-xl font-semibold text-white transition-all hover:opacity-90" style={{ backgroundColor: COLORS.primary }}>
+                  Submit Another
+                </button>
+                <button onClick={() => window.location.href = '/dashboard'} className="px-6 py-3 rounded-xl font-semibold transition-all hover:opacity-90" style={{ backgroundColor: COLORS.secondary, color: 'white' }}>
+                  View Dashboard
+                </button>
+              </div>
             </div>
           </div>
         );
@@ -537,13 +574,11 @@
 
       return (
         <div className="min-h-screen bg-gray-50">
-          <div className="max-w-3xl mx-auto px-6 py-8">
+          <div className="max-w-7xl mx-auto px-6 py-8">
             {/* Header */}
             <div className="mb-6">
               <div className="flex items-center gap-3 mb-2">
-                <div className="w-10 h-10 rounded-xl flex items-center justify-center" style={{ background: 'linear-gradient(135deg, ' + COLORS.primary + ', ' + COLORS.secondary + ')' }}>
-                  <Sparkles className="w-5 h-5 text-white" />
-                </div>
+                <img src="/static/logo/workboard-logo-icon.png" className="h-10 w-auto" alt="WorkBoard" />
                 <h1 className="text-2xl font-bold text-gray-900">AI Usage Intake Form</h1>
               </div>
               <p className="text-gray-600">Enter one workflow, task, or experiment at a time.</p>
@@ -557,36 +592,42 @@
                 icon={BarChart3}
                 isActive={false}
                 onClick={() => window.location.href = '/'}
+                tooltip="Preview dashboard with sample data"
               />
               <NavButton
                 label="Instructions"
                 icon={FileText}
                 isActive={false}
                 onClick={() => window.location.href = '/instructions'}
+                tooltip="Learn how to fill out the form"
               />
               <NavButton
                 label="Live Dashboard"
                 icon={ExternalLink}
                 isActive={false}
                 onClick={() => window.location.href = '/dashboard'}
+                tooltip="View WorkBoard's AI Usage and Impact Dashboard"
               />
               <NavButton
                 label="Enter Your AI Use Cases"
                 icon={PlusCircle}
                 isActive={true}
                 onClick={() => window.location.href = '/form'}
+                tooltip="Submit your AI workflows, tasks, and experiments"
               />
               <NavButton
                 label="Manage Entries"
                 icon={Settings}
                 isActive={false}
                 onClick={() => window.location.href = '/admin'}
+                tooltip="Edit or delete submitted entries"
               />
               <NavButton
                 label="Configuration"
                 icon={Sliders}
                 isActive={false}
                 onClick={() => window.location.href = '/config'}
+                tooltip="Edit functions, teams, AI tools and AI capabilities"
               />
             </div>
 
@@ -649,32 +690,51 @@
                   </div>
                   <div className="space-y-2">
                     <label className="block text-sm font-medium text-gray-700">AI Capability Category <span className="text-red-500">*</span></label>
+                    {/* Main capabilities grid (excluding Other) */}
                     <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3">
-                      {(apiConfig?.capabilities || []).map((cap) => {
-                        const isOtherCapability = cap.name.toLowerCase() === 'other';
+                      {(apiConfig?.capabilities || []).filter(cap => cap.name.toLowerCase() !== 'other').map((cap) => {
                         const isSelected = selectedCapability === cap.id;
                         return (
-                          <div key={cap.id} className="space-y-2">
-                            <button type="button" onClick={() => setSelectedCapability(cap.id)} className={`w-full flex items-center justify-center gap-2 px-3 py-3 rounded-xl border-2 transition-all text-center ${isSelected ? '' : 'border-gray-200 hover:border-gray-300'}`} style={isSelected ? { borderColor: COLORS.primary, backgroundColor: COLORS.primary + '10' } : {}}>
+                          <button key={cap.id} type="button" onClick={() => setSelectedCapability(cap.id)} className={`flex items-center justify-center gap-2 px-3 py-3 rounded-xl border-2 transition-all text-center ${isSelected ? '' : 'border-gray-200 hover:border-gray-300'}`} style={isSelected ? { borderColor: COLORS.primary, backgroundColor: COLORS.primary + '10' } : {}}>
+                            <div className={`w-4 h-4 rounded flex items-center justify-center border-2 flex-shrink-0 ${isSelected ? '' : 'border-gray-300'}`} style={isSelected ? { backgroundColor: COLORS.primary, borderColor: COLORS.primary } : {}}>
+                              {isSelected && <Check className="w-2.5 h-2.5 text-white" />}
+                            </div>
+                            <span className="font-medium text-gray-700 text-sm">{cap.name}</span>
+                          </button>
+                        );
+                      })}
+                    </div>
+                    {/* Other capability on its own row */}
+                    {(() => {
+                      const otherCap = (apiConfig?.capabilities || []).find(cap => cap.name.toLowerCase() === 'other');
+                      if (!otherCap) return null;
+                      const isSelected = selectedCapability === otherCap.id;
+                      return (
+                        <div className="space-y-2 pt-2">
+                          <div className="flex items-center gap-3">
+                            <button type="button" onClick={() => setSelectedCapability(otherCap.id)} className={`flex items-center justify-center gap-2 px-4 py-3 rounded-xl border-2 transition-all ${isSelected ? '' : 'border-gray-200 hover:border-gray-300'}`} style={isSelected ? { borderColor: COLORS.primary, backgroundColor: COLORS.primary + '10' } : {}}>
                               <div className={`w-4 h-4 rounded flex items-center justify-center border-2 flex-shrink-0 ${isSelected ? '' : 'border-gray-300'}`} style={isSelected ? { backgroundColor: COLORS.primary, borderColor: COLORS.primary } : {}}>
                                 {isSelected && <Check className="w-2.5 h-2.5 text-white" />}
                               </div>
-                              <span className="font-medium text-gray-700 text-sm">{cap.name}</span>
+                              <span className="font-medium text-gray-700 text-sm">Other</span>
                             </button>
-                            {isOtherCapability && isSelected && (
+                            {isSelected && (
                               <input
                                 type="text"
                                 value={otherCapabilityName}
                                 onChange={(e) => setOtherCapabilityName(e.target.value)}
                                 placeholder="Enter capability name (required)..."
-                                className="w-full bg-white border border-gray-300 rounded-lg px-3 py-2 text-gray-900 text-sm"
+                                className="flex-1 bg-white border border-gray-300 rounded-lg px-3 py-2.5 text-gray-900 text-sm"
                                 required
                               />
                             )}
                           </div>
-                        );
-                      })}
-                    </div>
+                          {isSelected && (
+                            <p className="text-xs text-gray-500 italic ml-1">Entering a new capability will save it for future use.</p>
+                          )}
+                        </div>
+                      );
+                    })()}
                   </div>
                   <div className="space-y-2">
                     <label className="block text-sm font-medium text-gray-700">Description <span className="text-red-500">*</span></label>
@@ -689,31 +749,48 @@
                   <span className="w-7 h-7 rounded-lg flex items-center justify-center text-white text-sm font-bold" style={{ backgroundColor: COLORS.primaryLight }}>3</span>
                   AI Tools Used
                 </h2>
+                {/* Main tools grid (excluding Other) */}
                 <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-5 gap-3">
-                  {(apiConfig?.tools || []).map((tool) => {
-                    const isOtherTool = tool.name.toLowerCase() === 'other';
-                    return (
-                      <div key={tool.id} className="space-y-2">
-                        <button type="button" onClick={() => setSelectedTools(prev => ({ ...prev, [tool.id]: !prev[tool.id] }))} className={`w-full flex items-center justify-center gap-2 px-3 py-3 rounded-xl border-2 transition-all text-center ${selectedTools[tool.id] ? '' : 'border-gray-200 hover:border-gray-300'}`} style={selectedTools[tool.id] ? { borderColor: COLORS.primary, backgroundColor: COLORS.primary + '10' } : {}}>
-                          <div className={`w-4 h-4 rounded flex items-center justify-center border-2 flex-shrink-0 ${selectedTools[tool.id] ? '' : 'border-gray-300'}`} style={selectedTools[tool.id] ? { backgroundColor: COLORS.primary, borderColor: COLORS.primary } : {}}>
-                            {selectedTools[tool.id] && <Check className="w-2.5 h-2.5 text-white" />}
+                  {(apiConfig?.tools || []).filter(tool => tool.name.toLowerCase() !== 'other').map((tool) => (
+                    <button key={tool.id} type="button" onClick={() => setSelectedTools(prev => ({ ...prev, [tool.id]: !prev[tool.id] }))} className={`flex items-center justify-center gap-2 px-3 py-3 rounded-xl border-2 transition-all text-center ${selectedTools[tool.id] ? '' : 'border-gray-200 hover:border-gray-300'}`} style={selectedTools[tool.id] ? { borderColor: COLORS.primary, backgroundColor: COLORS.primary + '10' } : {}}>
+                      <div className={`w-4 h-4 rounded flex items-center justify-center border-2 flex-shrink-0 ${selectedTools[tool.id] ? '' : 'border-gray-300'}`} style={selectedTools[tool.id] ? { backgroundColor: COLORS.primary, borderColor: COLORS.primary } : {}}>
+                        {selectedTools[tool.id] && <Check className="w-2.5 h-2.5 text-white" />}
+                      </div>
+                      <span className="font-medium text-gray-700 text-sm">{tool.name}</span>
+                    </button>
+                  ))}
+                </div>
+                {/* Other tool on its own row */}
+                {(() => {
+                  const otherTool = (apiConfig?.tools || []).find(tool => tool.name.toLowerCase() === 'other');
+                  if (!otherTool) return null;
+                  const isSelected = selectedTools[otherTool.id];
+                  return (
+                    <div className="space-y-2 pt-3">
+                      <div className="flex items-center gap-3">
+                        <button type="button" onClick={() => setSelectedTools(prev => ({ ...prev, [otherTool.id]: !prev[otherTool.id] }))} className={`flex items-center justify-center gap-2 px-4 py-3 rounded-xl border-2 transition-all ${isSelected ? '' : 'border-gray-200 hover:border-gray-300'}`} style={isSelected ? { borderColor: COLORS.primary, backgroundColor: COLORS.primary + '10' } : {}}>
+                          <div className={`w-4 h-4 rounded flex items-center justify-center border-2 flex-shrink-0 ${isSelected ? '' : 'border-gray-300'}`} style={isSelected ? { backgroundColor: COLORS.primary, borderColor: COLORS.primary } : {}}>
+                            {isSelected && <Check className="w-2.5 h-2.5 text-white" />}
                           </div>
-                          <span className="font-medium text-gray-700 text-sm">{tool.name}</span>
+                          <span className="font-medium text-gray-700 text-sm">Other</span>
                         </button>
-                        {isOtherTool && selectedTools[tool.id] && (
+                        {isSelected && (
                           <input
                             type="text"
-                            value={otherToolNames[tool.id] || ''}
-                            onChange={(e) => setOtherToolNames(prev => ({ ...prev, [tool.id]: e.target.value }))}
+                            value={otherToolNames[otherTool.id] || ''}
+                            onChange={(e) => setOtherToolNames(prev => ({ ...prev, [otherTool.id]: e.target.value }))}
                             placeholder="Enter tool name (required)..."
-                            className="w-full bg-white border border-gray-300 rounded-lg px-3 py-2 text-gray-900 text-sm"
+                            className="flex-1 bg-white border border-gray-300 rounded-lg px-3 py-2.5 text-gray-900 text-sm"
                             required
                           />
                         )}
                       </div>
-                    );
-                  })}
-                </div>
+                      {isSelected && (
+                        <p className="text-xs text-gray-500 italic ml-1">Entering a new tool will save it for future use.</p>
+                      )}
+                    </div>
+                  );
+                })()}
               </div>
 
               {/* Section 4: Impact - Hidden for Experiments */}

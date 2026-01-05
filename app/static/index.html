@@ -11,6 +11,35 @@
   <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
   <style>
     body { font-family: 'DM Sans', system-ui, sans-serif; }
+    /* Custom fast tooltips */
+    .tooltip-wrapper {
+      position: relative;
+    }
+    .tooltip-wrapper::after {
+      content: attr(data-tooltip);
+      position: absolute;
+      bottom: 100%;
+      left: 50%;
+      transform: translateX(-50%);
+      padding: 6px 10px;
+      background: #1f2937;
+      color: white;
+      font-size: 12px;
+      font-weight: 500;
+      border-radius: 6px;
+      white-space: nowrap;
+      opacity: 0;
+      visibility: hidden;
+      transition: opacity 0.15s, visibility 0.15s;
+      pointer-events: none;
+      margin-bottom: 6px;
+      z-index: 50;
+    }
+    .tooltip-wrapper:hover::after {
+      opacity: 1;
+      visibility: visible;
+      transition-delay: 0.2s;
+    }
   </style>
 </head>
 <body class="bg-gray-50">
@@ -82,46 +111,49 @@
         { function: 'Support', workflows: 5, tasks: 12, experiments: 2, annualCostSavings: 245000, hoursSaved: 1900, qualityImpact: 3, newCapability: 2, users: 16 },
         { function: 'Product', workflows: 4, tasks: 6, experiments: 1, annualCostSavings: 215000, hoursSaved: 1600, qualityImpact: 2, newCapability: 1, users: 14 },
         { function: 'Finance', workflows: 2, tasks: 3, experiments: 1, annualCostSavings: 158000, hoursSaved: 1200, qualityImpact: 2, newCapability: 1, users: 12 },
-        { function: 'HR', workflows: 1, tasks: 1, experiments: 0, annualCostSavings: 120000, hoursSaved: 1020, qualityImpact: 1, newCapability: 1, users: 14 }
+        { function: 'HR', workflows: 1, tasks: 1, experiments: 0, annualCostSavings: 120000, hoursSaved: 1020, qualityImpact: 1, newCapability: 1, users: 14 },
+        { function: 'Partnerships', workflows: 2, tasks: 4, experiments: 1, annualCostSavings: 95000, hoursSaved: 720, qualityImpact: 1, newCapability: 1, users: 8 },
+        { function: 'SLT', workflows: 1, tasks: 2, experiments: 1, annualCostSavings: 75000, hoursSaved: 480, qualityImpact: 1, newCapability: 0, users: 5 }
       ],
       byTeam: {
         'Sales': [
-          { team: 'NA', workflows: 5, tasks: 14, experiments: 2, annualCostSavings: 245000, hoursSaved: 1800, users: 12 },
-          { team: 'EMEA', workflows: 4, tasks: 12, experiments: 2, annualCostSavings: 185000, hoursSaved: 1400, users: 9 },
-          { team: 'Enterprise', workflows: 2, tasks: 5, experiments: 1, annualCostSavings: 75000, hoursSaved: 650, users: 4 },
-          { team: 'SMB', workflows: 1, tasks: 3, experiments: 0, annualCostSavings: 40000, hoursSaved: 350, users: 3 }
+          { team: 'NA', workflows: 7, tasks: 20, experiments: 3, annualCostSavings: 320000, hoursSaved: 2500, users: 16 },
+          { team: 'EMEA', workflows: 5, tasks: 14, experiments: 2, annualCostSavings: 225000, hoursSaved: 1700, users: 12 }
         ],
         'Marketing': [
-          { team: 'Content', workflows: 3, tasks: 10, experiments: 2, annualCostSavings: 145000, hoursSaved: 1100, users: 6 },
-          { team: 'Demand Gen', workflows: 3, tasks: 7, experiments: 1, annualCostSavings: 122000, hoursSaved: 950, users: 5 },
-          { team: 'Brand', workflows: 2, tasks: 5, experiments: 1, annualCostSavings: 95000, hoursSaved: 750, users: 7 }
+          { team: 'Brand', workflows: 2, tasks: 5, experiments: 1, annualCostSavings: 95000, hoursSaved: 750, users: 5 },
+          { team: 'Content', workflows: 3, tasks: 8, experiments: 1, annualCostSavings: 125000, hoursSaved: 950, users: 5 },
+          { team: 'Demand Gen', workflows: 2, tasks: 6, experiments: 1, annualCostSavings: 92000, hoursSaved: 700, users: 4 },
+          { team: 'Product Marketing', workflows: 1, tasks: 3, experiments: 1, annualCostSavings: 50000, hoursSaved: 400, users: 4 }
         ],
         'Engineering': [
           { team: 'Backend', workflows: 4, tasks: 12, experiments: 4, annualCostSavings: 235000, hoursSaved: 1750, users: 14 },
-          { team: 'Frontend', workflows: 3, tasks: 10, experiments: 3, annualCostSavings: 165000, hoursSaved: 1250, users: 10 },
-          { team: 'DevOps', workflows: 2, tasks: 6, experiments: 1, annualCostSavings: 120000, hoursSaved: 900, users: 8 }
+          { team: 'DevOps', workflows: 2, tasks: 6, experiments: 1, annualCostSavings: 120000, hoursSaved: 900, users: 6 },
+          { team: 'Frontend', workflows: 2, tasks: 8, experiments: 2, annualCostSavings: 125000, hoursSaved: 950, users: 8 },
+          { team: 'QA', workflows: 1, tasks: 2, experiments: 1, annualCostSavings: 40000, hoursSaved: 300, users: 4 }
         ],
         'Customer Success': [
           { team: 'Enterprise CS', workflows: 3, tasks: 9, experiments: 1, annualCostSavings: 155000, hoursSaved: 1100, users: 10 },
-          { team: 'SMB CS', workflows: 2, tasks: 6, experiments: 1, annualCostSavings: 85000, hoursSaved: 650, users: 8 },
-          { team: 'Onboarding', workflows: 1, tasks: 3, experiments: 0, annualCostSavings: 45000, hoursSaved: 350, users: 4 }
+          { team: 'Implementation Consultant', workflows: 2, tasks: 6, experiments: 1, annualCostSavings: 85000, hoursSaved: 650, users: 8 },
+          { team: 'Services', workflows: 1, tasks: 3, experiments: 0, annualCostSavings: 45000, hoursSaved: 350, users: 4 }
         ],
         'Support': [
-          { team: 'Tier 1', workflows: 2, tasks: 6, experiments: 1, annualCostSavings: 105000, hoursSaved: 850, users: 8 },
-          { team: 'Tier 2', workflows: 2, tasks: 4, experiments: 1, annualCostSavings: 85000, hoursSaved: 650, users: 5 },
-          { team: 'Technical Support', workflows: 1, tasks: 2, experiments: 0, annualCostSavings: 55000, hoursSaved: 400, users: 3 }
+          { team: 'Technical Support', workflows: 5, tasks: 12, experiments: 2, annualCostSavings: 245000, hoursSaved: 1900, users: 16 }
         ],
         'Product': [
-          { team: 'Core Product', workflows: 2, tasks: 3, experiments: 1, annualCostSavings: 125000, hoursSaved: 950, users: 8 },
-          { team: 'Analytics', workflows: 2, tasks: 3, experiments: 0, annualCostSavings: 90000, hoursSaved: 650, users: 6 }
+          { team: 'Analytics', workflows: 2, tasks: 3, experiments: 0, annualCostSavings: 90000, hoursSaved: 650, users: 6 },
+          { team: 'Core Product', workflows: 2, tasks: 3, experiments: 1, annualCostSavings: 125000, hoursSaved: 950, users: 8 }
         ],
         'Finance': [
-          { team: 'FP&A', workflows: 1, tasks: 2, experiments: 1, annualCostSavings: 88000, hoursSaved: 650, users: 6 },
-          { team: 'Accounting', workflows: 1, tasks: 1, experiments: 0, annualCostSavings: 70000, hoursSaved: 550, users: 6 }
+          { team: 'Accounting', workflows: 1, tasks: 1, experiments: 0, annualCostSavings: 70000, hoursSaved: 550, users: 6 },
+          { team: 'FP&A', workflows: 1, tasks: 2, experiments: 1, annualCostSavings: 88000, hoursSaved: 650, users: 6 }
         ],
         'HR': [
-          { team: 'Recruiting', workflows: 1, tasks: 1, experiments: 0, annualCostSavings: 120000, hoursSaved: 1020, users: 14 }
-        ]
+          { team: 'People Ops', workflows: 0, tasks: 1, experiments: 0, annualCostSavings: 35000, hoursSaved: 280, users: 4 },
+          { team: 'Recruiting', workflows: 1, tasks: 0, experiments: 0, annualCostSavings: 85000, hoursSaved: 740, users: 10 }
+        ],
+        'Partnerships': [],
+        'SLT': []
       },
       byMethodType: [
         { type: 'Drafting', count: 52, icon: '✍️' },
@@ -131,14 +163,19 @@
         { type: 'Coding', count: 18, icon: '💻' },
         { type: 'Automation', count: 14, icon: '⚙️' },
         { type: 'Classifying', count: 12, icon: '🏷️' },
-        { type: 'Vibe Coding', count: 8, icon: '🎯' }
+        { type: 'Vibe Coding', count: 8, icon: '🎯' },
+        { type: 'Deep Research', count: 6, icon: '🔬' }
       ],
       byTool: [
         { tool: 'ChatGPT', count: 89, color: COLORS.primary },
         { tool: 'Claude', count: 62, color: COLORS.secondary },
         { tool: 'Gemini', count: 18, color: COLORS.accent1 },
         { tool: 'Gong', count: 12, color: COLORS.purple },
-        { tool: 'Other', count: 13, color: COLORS.slate }
+        { tool: 'Copilot', count: 15, color: COLORS.accent2 },
+        { tool: 'Cursor', count: 10, color: COLORS.accent3 },
+        { tool: 'Github Copilot', count: 8, color: COLORS.primaryDark },
+        { tool: 'Claude Code', count: 5, color: COLORS.success },
+        { tool: 'Other', count: 7, color: COLORS.slate }
       ],
       impactTypes: [
         { type: 'Cost Savings', count: 79, color: COLORS.success },
@@ -181,23 +218,25 @@
     }
 
     // Navigation Button
-    function NavButton({ label, icon: Icon, isActive, onClick, disabled }) {
+    function NavButton({ label, icon: Icon, isActive, onClick, disabled, tooltip }) {
       return (
-        <button 
-          onClick={onClick}
-          disabled={disabled}
-          className={`flex items-center gap-2 px-4 py-2 rounded-lg font-medium text-sm transition-all ${
-            isActive 
-              ? 'text-white shadow-md' 
-              : disabled 
-                ? 'bg-gray-100 text-gray-400 cursor-not-allowed'
-                : 'bg-white text-gray-700 border border-gray-300 hover:bg-gray-50 hover:border-gray-400'
-          }`}
-          style={isActive ? { backgroundColor: COLORS.primary } : {}}
-        >
-          <Icon className="w-4 h-4" />
-          {label}
-        </button>
+        <div className="tooltip-wrapper" data-tooltip={tooltip}>
+          <button
+            onClick={onClick}
+            disabled={disabled}
+            className={`flex items-center gap-2 px-4 py-2 rounded-lg font-medium text-sm transition-all ${
+              isActive
+                ? 'text-white shadow-md'
+                : disabled
+                  ? 'bg-gray-100 text-gray-400 cursor-not-allowed'
+                  : 'bg-white text-gray-700 border border-gray-300 hover:bg-gray-50 hover:border-gray-400'
+            }`}
+            style={isActive ? { backgroundColor: COLORS.primary } : {}}
+          >
+            <Icon className="w-4 h-4" />
+            {label}
+          </button>
+        </div>
       );
     }
 
@@ -244,7 +283,7 @@
     }
 
     // Category Card
-    function CategoryCard({ title, data, color, icon: Icon }) {
+    function CategoryCard({ title, data, color, icon: Icon, isExperiment }) {
       return (
         <div className="bg-white rounded-2xl border border-gray-200 p-6 shadow-sm">
           <div className="flex items-center gap-3 mb-4">
@@ -253,43 +292,53 @@
             </div>
             <h3 className="text-lg font-semibold text-gray-900">{title}</h3>
           </div>
-          
-          <div className="grid grid-cols-3 gap-4">
+
+          {isExperiment ? (
             <div>
               <p className="text-3xl font-bold text-gray-900">{data.count}</p>
               <p className="text-gray-500 text-sm">Total Count</p>
+              <p className="text-gray-400 text-xs mt-2 italic">Experiments are exploratory - no impact metrics tracked</p>
             </div>
-            <div>
-              <p className="text-2xl font-bold" style={{ color: COLORS.success }}>{formatCurrency(data.annualCostSavings)}</p>
-              <p className="text-gray-500 text-sm">Cost Savings</p>
-            </div>
-            <div>
-              <p className="text-2xl font-bold" style={{ color: COLORS.primary }}>{formatNumber(data.hoursSaved)}</p>
-              <p className="text-gray-500 text-sm">Hours Saved</p>
-            </div>
-          </div>
-          
-          <div className="mt-4 pt-4 border-t border-gray-200">
-            <p className="text-gray-700 text-xs font-semibold mb-3 uppercase tracking-wide">AI Method Impact Breakdown (count)</p>
-            <div className="space-y-2 text-sm">
-              <div className="flex items-center">
-                <span className="text-gray-900 font-bold w-8">{data.impactBreakdown.costSavings}</span>
-                <span className="text-gray-600">Cost Savings</span>
+          ) : (
+            <>
+              <div className="grid grid-cols-3 gap-4">
+                <div>
+                  <p className="text-3xl font-bold text-gray-900">{data.count}</p>
+                  <p className="text-gray-500 text-sm">Total Count</p>
+                </div>
+                <div>
+                  <p className="text-2xl font-bold" style={{ color: COLORS.success }}>{formatCurrency(data.annualCostSavings)}</p>
+                  <p className="text-gray-500 text-sm">Cost Savings</p>
+                </div>
+                <div>
+                  <p className="text-2xl font-bold" style={{ color: COLORS.primary }}>{formatNumber(data.hoursSaved)}</p>
+                  <p className="text-gray-500 text-sm">Time Savings</p>
+                </div>
               </div>
-              <div className="flex items-center">
-                <span className="text-gray-900 font-bold w-8">{data.impactBreakdown.timeSavings}</span>
-                <span className="text-gray-600">Time Savings</span>
+
+              <div className="mt-4 pt-4 border-t border-gray-200">
+                <p className="text-gray-700 text-xs font-semibold mb-3 uppercase tracking-wide">AI Method Impact Breakdown (count)</p>
+                <div className="space-y-2 text-sm">
+                  <div className="flex items-center">
+                    <span className="text-gray-900 font-bold w-8">{data.impactBreakdown.costSavings}</span>
+                    <span className="text-gray-600">Cost Savings</span>
+                  </div>
+                  <div className="flex items-center">
+                    <span className="text-gray-900 font-bold w-8">{data.impactBreakdown.timeSavings}</span>
+                    <span className="text-gray-600">Time Savings</span>
+                  </div>
+                  <div className="flex items-center">
+                    <span className="text-gray-900 font-bold w-8">{data.impactBreakdown.qualityImprovement}</span>
+                    <span className="text-gray-600">Quality Improvement</span>
+                  </div>
+                  <div className="flex items-center">
+                    <span className="text-gray-900 font-bold w-8">{data.impactBreakdown.newCapability}</span>
+                    <span className="text-gray-600">New Capability</span>
+                  </div>
+                </div>
               </div>
-              <div className="flex items-center">
-                <span className="text-gray-900 font-bold w-8">{data.impactBreakdown.qualityImprovement}</span>
-                <span className="text-gray-600">Quality Improvement</span>
-              </div>
-              <div className="flex items-center">
-                <span className="text-gray-900 font-bold w-8">{data.impactBreakdown.newCapability}</span>
-                <span className="text-gray-600">New Capability</span>
-              </div>
-            </div>
-          </div>
+            </>
+          )}
         </div>
       );
     }
@@ -373,7 +422,7 @@
     function DonutChart({ data, title }) {
       const total = data.reduce((sum, d) => sum + d.count, 0);
       let cumulative = 0;
-      
+
       const gradientStops = data.map(d => {
         const start = (cumulative / total) * 100;
         cumulative += d.count;
@@ -386,7 +435,7 @@
           <h3 className="text-lg font-semibold text-gray-900 mb-4">{title}</h3>
           <div className="flex items-center justify-center gap-8">
             <div className="relative w-36 h-36">
-              <div 
+              <div
                 className="w-full h-full rounded-full"
                 style={{ background: 'conic-gradient(' + gradientStops + ')' }}
               ></div>
@@ -410,6 +459,28 @@
       );
     }
 
+    // Capabilities Horizontal Bar Chart
+    function CapabilitiesChart({ data, title }) {
+      const max = Math.max(...data.map(d => d.count));
+      return (
+        <div className="bg-white rounded-2xl border border-gray-200 p-6 shadow-sm">
+          <h3 className="text-lg font-semibold text-gray-900 mb-4">{title}</h3>
+          <div className="space-y-3">
+            {data.map((item, idx) => (
+              <div key={idx} className="flex items-center gap-3">
+                <div className="w-28 text-sm text-gray-700 truncate font-medium">{item.type}</div>
+                <div className="flex-1 flex items-center gap-2">
+                  <div className="h-7 rounded flex items-center px-3" style={{ width: Math.max((item.count / max) * 100, 18) + '%', backgroundColor: COLORS.accent1 }}>
+                    <span className="text-white text-xs font-bold">{item.count}</span>
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      );
+    }
+
     // Function Row
     function FunctionRow({ data, teams, isExpanded, onToggle }) {
       return (
@@ -424,8 +495,7 @@
               <div className="text-center w-16"><span className="font-semibold" style={{ color: COLORS.primary }}>{data.tasks}</span><span className="text-gray-500 text-xs ml-1">tasks</span></div>
               <div className="text-center w-16"><span className="font-semibold" style={{ color: COLORS.primaryLight }}>{data.experiments}</span><span className="text-gray-500 text-xs ml-1">exp</span></div>
               <div className="text-center w-20"><span className="font-semibold" style={{ color: COLORS.success }}>{formatCurrency(data.annualCostSavings)}</span></div>
-              <div className="text-center w-20"><span className="font-semibold" style={{ color: COLORS.primary }}>{formatNumber(data.hoursSaved)}</span><span className="text-gray-500 text-xs ml-1">hrs</span></div>
-              <div className="text-center w-12"><span className="text-gray-700 font-semibold">{data.users}</span></div>
+              <div className="text-center w-24"><span className="font-semibold" style={{ color: COLORS.primary }}>{formatNumber(data.hoursSaved)}</span><span className="text-gray-500 text-xs ml-1">hrs</span></div>
             </div>
           </button>
           {isExpanded && teams && (
@@ -438,8 +508,7 @@
                     <th className="text-center py-2">Tasks</th>
                     <th className="text-center py-2">Experiments</th>
                     <th className="text-center py-2">Cost Savings</th>
-                    <th className="text-center py-2">Hours Saved</th>
-                    <th className="text-center py-2">Users</th>
+                    <th className="text-center py-2">Time Savings</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -450,8 +519,7 @@
                       <td className="py-3 text-center font-medium" style={{ color: COLORS.primary }}>{team.tasks}</td>
                       <td className="py-3 text-center font-medium" style={{ color: COLORS.primaryLight }}>{team.experiments}</td>
                       <td className="py-3 text-center font-medium" style={{ color: COLORS.success }}>{formatCurrency(team.annualCostSavings)}</td>
-                      <td className="py-3 text-center font-medium" style={{ color: COLORS.primary }}>{formatNumber(team.hoursSaved)}</td>
-                      <td className="py-3 text-center text-gray-700 font-medium">{team.users}</td>
+                      <td className="py-3 text-center font-medium" style={{ color: COLORS.primary }}>{formatNumber(team.hoursSaved)} hrs</td>
                     </tr>
                   ))}
                 </tbody>
@@ -483,9 +551,7 @@
             {/* Header */}
             <div className="mb-6">
               <div className="flex items-center gap-3 mb-4">
-                <div className="w-10 h-10 rounded-xl flex items-center justify-center" style={{ background: 'linear-gradient(135deg, ' + COLORS.primary + ', ' + COLORS.secondary + ')' }}>
-                  <Sparkles className="w-5 h-5 text-white" />
-                </div>
+                <img src="/static/logo/workboard-logo-icon.png" className="h-10 w-auto" alt="WorkBoard" />
                 <h1 className="text-2xl font-bold text-gray-900">WorkBoard's Internal AI Usage and Impact Catalogue (v1.0)</h1>
               </div>
               <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-lg text-sm font-medium" style={{ backgroundColor: COLORS.warning + '20', color: COLORS.warning }}>
@@ -519,36 +585,42 @@
                 icon={BarChart3}
                 isActive={true}
                 onClick={() => window.location.href = '/'}
+                tooltip="Preview dashboard with sample data"
               />
               <NavButton
                 label="Instructions"
                 icon={FileText}
                 isActive={false}
                 onClick={() => window.location.href = '/instructions'}
+                tooltip="Learn how to fill out the form"
               />
               <NavButton
                 label="Live Dashboard"
                 icon={ExternalLink}
                 isActive={false}
                 onClick={() => window.location.href = '/dashboard'}
+                tooltip="View WorkBoard's AI Usage and Impact Dashboard"
               />
               <NavButton
                 label="Enter Your AI Use Cases"
                 icon={PlusCircle}
                 isActive={false}
                 onClick={() => window.location.href = '/form'}
+                tooltip="Submit your AI workflows, tasks, and experiments"
               />
               <NavButton
                 label="Manage Entries"
                 icon={Settings}
                 isActive={false}
                 onClick={() => window.location.href = '/admin'}
+                tooltip="Edit or delete submitted entries"
               />
               <NavButton
                 label="Configuration"
                 icon={Sliders}
                 isActive={false}
                 onClick={() => window.location.href = '/config'}
+                tooltip="Edit functions, teams, AI tools and AI capabilities"
               />
             </div>
 
@@ -682,29 +754,18 @@
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 mb-8">
               <CategoryCard title="Workflows" data={DASHBOARD_DATA.byCategory.workflows} color={COLORS.secondary} icon={Layers} />
               <CategoryCard title="Tasks" data={DASHBOARD_DATA.byCategory.tasks} color={COLORS.primary} icon={CheckCircle2} />
-              <CategoryCard title="Experiments" data={DASHBOARD_DATA.byCategory.experimentation} color={COLORS.primaryLight} icon={Sparkles} />
+              <CategoryCard title="Experiments" data={DASHBOARD_DATA.byCategory.experimentation} color={COLORS.primaryLight} icon={Sparkles} isExperiment={true} />
             </div>
 
             {/* Charts Row: Donut Charts */}
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
               <DonutChart data={DASHBOARD_DATA.impactTypes} title="AI Method Impact Type Distribution" />
               <DonutChart data={DASHBOARD_DATA.byTool} title="AI Tools Used" />
             </div>
 
-            {/* Method Types */}
-            <div className="bg-white rounded-2xl border border-gray-200 p-6 shadow-sm mb-8">
-              <h3 className="text-lg font-semibold text-gray-900 mb-4">Breakdown of Categories of AI Capabilities Used</h3>
-              <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                {DASHBOARD_DATA.byMethodType.map((method, idx) => (
-                  <div key={idx} className="bg-gray-50 border border-gray-200 rounded-xl p-4 flex items-center gap-3">
-                    <span className="text-2xl">{method.icon}</span>
-                    <div>
-                      <p className="text-gray-900 font-semibold">{method.count}</p>
-                      <p className="text-gray-500 text-xs">{method.type}</p>
-                    </div>
-                  </div>
-                ))}
-              </div>
+            {/* AI Capabilities Used - Full Width */}
+            <div className="mb-8">
+              <CapabilitiesChart data={DASHBOARD_DATA.byMethodType} title="AI Capabilities Used" />
             </div>
 
             {/* Function & Team Breakdown */}
@@ -730,8 +791,7 @@
                   <span className="w-16 text-center">Tasks</span>
                   <span className="w-16 text-center">Experiments</span>
                   <span className="w-20 text-center">Cost Savings</span>
-                  <span className="w-20 text-center">Hours</span>
-                  <span className="w-12 text-center">Users</span>
+                  <span className="w-24 text-center leading-tight">Time<br/>Savings</span>
                 </div>
               </div>
               

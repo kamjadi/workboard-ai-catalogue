@@ -11,6 +11,35 @@
   <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
   <style>
     body { font-family: 'DM Sans', system-ui, sans-serif; }
+    /* Custom fast tooltips */
+    .tooltip-wrapper {
+      position: relative;
+    }
+    .tooltip-wrapper::after {
+      content: attr(data-tooltip);
+      position: absolute;
+      bottom: 100%;
+      left: 50%;
+      transform: translateX(-50%);
+      padding: 6px 10px;
+      background: #1f2937;
+      color: white;
+      font-size: 12px;
+      font-weight: 500;
+      border-radius: 6px;
+      white-space: nowrap;
+      opacity: 0;
+      visibility: hidden;
+      transition: opacity 0.15s, visibility 0.15s;
+      pointer-events: none;
+      margin-bottom: 6px;
+      z-index: 50;
+    }
+    .tooltip-wrapper:hover::after {
+      opacity: 1;
+      visibility: visible;
+      transition-delay: 0.2s;
+    }
   </style>
 </head>
 <body class="bg-gray-50">
@@ -45,21 +74,20 @@
       purple: '#7b68a6'
     };
 
-    // Configuration (static for preview)
+    // Configuration (static for preview - matches database)
     const CONFIG = {
-      functions: ["Sales", "Marketing", "Customer Success", "Support", "Services", "Engineering", "Product", "Finance", "HR", "Partners", "Other"],
+      functions: ["Sales", "Marketing", "Engineering", "Customer Success", "Support", "Product", "Finance", "HR", "Partnerships", "SLT"],
       teamsByFunction: {
-        "Sales": ["NA", "EMEA", "APAC", "LATAM", "Enterprise", "SMB", "Other"],
-        "Marketing": ["Brand", "Demand Gen", "Content", "Events", "Product Marketing", "Other"],
-        "Customer Success": ["Enterprise CS", "SMB CS", "Onboarding", "Renewals", "Other"],
-        "Support": ["Tier 1", "Tier 2", "Technical Support", "Customer Care", "Other"],
-        "Services": ["Implementation", "Consulting", "Training", "Solutions", "Other"],
-        "Engineering": ["Backend", "Frontend", "Platform", "DevOps", "QA", "Security", "Other"],
-        "Product": ["Core Product", "Growth", "Platform", "Analytics", "Other"],
-        "Finance": ["Accounting", "FP&A", "Revenue Ops", "Procurement", "Other"],
-        "HR": ["Recruiting", "People Ops", "L&D", "Total Rewards", "Other"],
-        "Partners": ["Channel", "Technology", "Strategic Alliances", "Other"],
-        "Other": ["Other"]
+        "Sales": ["NA", "EMEA"],
+        "Marketing": ["Brand", "Content", "Demand Gen", "Product Marketing"],
+        "Engineering": ["Backend", "DevOps", "Frontend", "QA"],
+        "Customer Success": ["Enterprise CS", "Implementation Consultant", "Services"],
+        "Support": ["Technical Support"],
+        "Product": ["Analytics", "Core Product"],
+        "Finance": ["Accounting", "FP&A"],
+        "HR": ["People Ops", "Recruiting"],
+        "Partnerships": [],
+        "SLT": []
       },
       aiMethodTypes: [
         { id: "workflow", label: "Workflow", description: "More than 1 task chained together" },
@@ -67,14 +95,15 @@
         { id: "experiment", label: "Experiment", description: "Tried but not yet in regular use" }
       ],
       aiCapabilities: [
-        { id: "drafting", label: "Drafting / Generating Text" },
-        { id: "summarizing", label: "Summarizing / Condensing" },
-        { id: "analyzing", label: "Analyzing Data" },
-        { id: "qa", label: "Q&A / Retrieval" },
-        { id: "coding", label: "Generating Code" },
-        { id: "automation", label: "Workflow Automation" },
-        { id: "classifying", label: "Classifying / Tagging" },
+        { id: "drafting", label: "Drafting" },
+        { id: "summarizing", label: "Summarizing" },
+        { id: "analyzing", label: "Analyzing" },
+        { id: "qa", label: "Q&A" },
+        { id: "coding", label: "Coding" },
+        { id: "automation", label: "Automation" },
+        { id: "classifying", label: "Classifying" },
         { id: "vibe_coding", label: "Vibe Coding" },
+        { id: "deep_research", label: "Deep Research" },
         { id: "other", label: "Other" }
       ],
       tools: [
@@ -82,7 +111,11 @@
         { id: "claude", label: "Claude" },
         { id: "gemini", label: "Gemini" },
         { id: "gong", label: "Gong" },
-        { id: "copilot", label: "Copilot" }
+        { id: "copilot", label: "Copilot" },
+        { id: "cursor", label: "Cursor" },
+        { id: "github_copilot", label: "Github Copilot" },
+        { id: "claude_code", label: "Claude Code" },
+        { id: "other", label: "Other" }
       ],
       impactTypes: [
         { id: "cost_savings", label: "Estimated Annual Cost Savings" },
@@ -122,20 +155,22 @@
     }
 
     // Navigation Button Component
-    function NavButton({ label, icon: Icon, isActive, onClick }) {
+    function NavButton({ label, icon: Icon, isActive, onClick, tooltip }) {
       return (
-        <button
-          onClick={onClick}
-          className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-all ${
-            isActive
-              ? 'text-white shadow-md'
-              : 'bg-white border border-gray-200 text-gray-700 hover:bg-gray-50 hover:border-gray-300'
-          }`}
-          style={isActive ? { backgroundColor: COLORS.primary } : {}}
-        >
-          {Icon && <Icon className="w-4 h-4" />}
-          {label}
-        </button>
+        <div className="tooltip-wrapper" data-tooltip={tooltip}>
+          <button
+            onClick={onClick}
+            className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-all ${
+              isActive
+                ? 'text-white shadow-md'
+                : 'bg-white border border-gray-200 text-gray-700 hover:bg-gray-50 hover:border-gray-300'
+            }`}
+            style={isActive ? { backgroundColor: COLORS.primary } : {}}
+          >
+            {Icon && <Icon className="w-4 h-4" />}
+            {label}
+          </button>
+        </div>
       );
     }
 
@@ -327,13 +362,11 @@
 
       return (
         <div className="min-h-screen bg-gray-50">
-          <div className="max-w-3xl mx-auto px-6 py-8">
+          <div className="max-w-7xl mx-auto px-6 py-8">
             {/* Header */}
             <div className="mb-6">
               <div className="flex items-center gap-3 mb-2">
-                <div className="w-10 h-10 rounded-xl flex items-center justify-center" style={{ background: 'linear-gradient(135deg, ' + COLORS.primary + ', ' + COLORS.secondary + ')' }}>
-                  <Sparkles className="w-5 h-5 text-white" />
-                </div>
+                <img src="/static/logo/workboard-logo-icon.png" className="h-10 w-auto" alt="WorkBoard" />
                 <h1 className="text-2xl font-bold text-gray-900">AI Usage Form - Instructions</h1>
               </div>
               <p className="text-gray-600">Preview the form fields and understand what information is needed.</p>
@@ -345,12 +378,12 @@
 
             {/* Navigation Buttons */}
             <div className="flex flex-wrap gap-3 mb-4">
-              <NavButton label="Overview" icon={BarChart3} isActive={false} onClick={() => window.location.href = '/'} />
-              <NavButton label="Instructions" icon={FileText} isActive={true} onClick={() => window.location.href = '/instructions'} />
-              <NavButton label="Live Dashboard" icon={ExternalLink} isActive={false} onClick={() => window.location.href = '/dashboard'} />
-              <NavButton label="Enter Your AI Use Cases" icon={PlusCircle} isActive={false} onClick={() => window.location.href = '/form'} />
-              <NavButton label="Manage Entries" icon={Settings} isActive={false} onClick={() => window.location.href = '/admin'} />
-              <NavButton label="Configuration" icon={Sliders} isActive={false} onClick={() => window.location.href = '/config'} />
+              <NavButton label="Overview" icon={BarChart3} isActive={false} onClick={() => window.location.href = '/'} tooltip="Preview dashboard with sample data" />
+              <NavButton label="Instructions" icon={FileText} isActive={true} onClick={() => window.location.href = '/instructions'} tooltip="Learn how to fill out the form" />
+              <NavButton label="Live Dashboard" icon={ExternalLink} isActive={false} onClick={() => window.location.href = '/dashboard'} tooltip="View WorkBoard's AI Usage and Impact Dashboard" />
+              <NavButton label="Enter Your AI Use Cases" icon={PlusCircle} isActive={false} onClick={() => window.location.href = '/form'} tooltip="Submit your AI workflows, tasks, and experiments" />
+              <NavButton label="Manage Entries" icon={Settings} isActive={false} onClick={() => window.location.href = '/admin'} tooltip="Edit or delete submitted entries" />
+              <NavButton label="Configuration" icon={Sliders} isActive={false} onClick={() => window.location.href = '/config'} tooltip="Edit functions, teams, AI tools and AI capabilities" />
             </div>
 
             <form onSubmit={handleSubmit} className="space-y-6">
@@ -421,31 +454,50 @@
                   </div>
                   <div className="space-y-2">
                     <label className="block text-sm font-medium text-gray-700">AI Capability Category <span className="text-red-500">*</span></label>
+                    {/* Main capabilities grid (excluding Other) */}
                     <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3">
-                      {CONFIG.aiCapabilities.map((cap) => {
-                        const isOtherCapability = cap.id === 'other';
+                      {CONFIG.aiCapabilities.filter(cap => cap.id !== 'other').map((cap) => {
                         const isSelected = selectedCapability === cap.id;
                         return (
-                          <div key={cap.id} className="space-y-2">
-                            <button type="button" onClick={() => setSelectedCapability(cap.id)} className={`w-full flex items-center justify-center gap-2 px-3 py-3 rounded-xl border-2 transition-all text-center ${isSelected ? '' : 'border-gray-200 hover:border-gray-300'}`} style={isSelected ? { borderColor: COLORS.primary, backgroundColor: COLORS.primary + '10' } : {}}>
+                          <button key={cap.id} type="button" onClick={() => setSelectedCapability(cap.id)} className={`flex items-center justify-center gap-2 px-3 py-3 rounded-xl border-2 transition-all text-center ${isSelected ? '' : 'border-gray-200 hover:border-gray-300'}`} style={isSelected ? { borderColor: COLORS.primary, backgroundColor: COLORS.primary + '10' } : {}}>
+                            <div className={`w-4 h-4 rounded flex items-center justify-center border-2 flex-shrink-0 ${isSelected ? '' : 'border-gray-300'}`} style={isSelected ? { backgroundColor: COLORS.primary, borderColor: COLORS.primary } : {}}>
+                              {isSelected && <Check className="w-2.5 h-2.5 text-white" />}
+                            </div>
+                            <span className="font-medium text-gray-700 text-sm">{cap.label}</span>
+                          </button>
+                        );
+                      })}
+                    </div>
+                    {/* Other capability on its own row */}
+                    {(() => {
+                      const otherCap = CONFIG.aiCapabilities.find(cap => cap.id === 'other');
+                      if (!otherCap) return null;
+                      const isSelected = selectedCapability === otherCap.id;
+                      return (
+                        <div className="space-y-2 pt-2">
+                          <div className="flex items-center gap-3">
+                            <button type="button" onClick={() => setSelectedCapability(otherCap.id)} className={`flex items-center justify-center gap-2 px-4 py-3 rounded-xl border-2 transition-all ${isSelected ? '' : 'border-gray-200 hover:border-gray-300'}`} style={isSelected ? { borderColor: COLORS.primary, backgroundColor: COLORS.primary + '10' } : {}}>
                               <div className={`w-4 h-4 rounded flex items-center justify-center border-2 flex-shrink-0 ${isSelected ? '' : 'border-gray-300'}`} style={isSelected ? { backgroundColor: COLORS.primary, borderColor: COLORS.primary } : {}}>
                                 {isSelected && <Check className="w-2.5 h-2.5 text-white" />}
                               </div>
-                              <span className="font-medium text-gray-700 text-sm">{cap.label}</span>
+                              <span className="font-medium text-gray-700 text-sm">Other</span>
                             </button>
-                            {isOtherCapability && isSelected && (
+                            {isSelected && (
                               <input
                                 type="text"
                                 value={otherCapabilityName}
                                 onChange={(e) => setOtherCapabilityName(e.target.value)}
                                 placeholder="Enter capability name (required)..."
-                                className="w-full bg-white border border-gray-300 rounded-lg px-3 py-2 text-gray-900 text-sm"
+                                className="flex-1 bg-white border border-gray-300 rounded-lg px-3 py-2.5 text-gray-900 text-sm"
                               />
                             )}
                           </div>
-                        );
-                      })}
-                    </div>
+                          {isSelected && (
+                            <p className="text-xs text-gray-500 italic ml-1">Entering a new capability will save it for future use.</p>
+                          )}
+                        </div>
+                      );
+                    })()}
                   </div>
                   <div className="space-y-2">
                     <label className="block text-sm font-medium text-gray-700">Description <span className="text-red-500">*</span></label>
@@ -460,25 +512,47 @@
                   <span className="w-7 h-7 rounded-lg flex items-center justify-center text-white text-sm font-bold" style={{ backgroundColor: COLORS.primaryLight }}>3</span>
                   AI Tools Used
                 </h2>
+                {/* Main tools grid (excluding Other) */}
                 <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-5 gap-3">
-                  {CONFIG.tools.map((tool) => (
-                    <button key={tool.id} type="button" onClick={() => setSelectedTools(prev => ({ ...prev, [tool.id]: !prev[tool.id] }))} className={`w-full flex items-center justify-center gap-2 px-3 py-3 rounded-xl border-2 transition-all ${selectedTools[tool.id] ? '' : 'border-gray-200 hover:border-gray-300'}`} style={selectedTools[tool.id] ? { borderColor: COLORS.primary, backgroundColor: COLORS.primary + '10' } : {}}>
-                      <div className={`w-4 h-4 rounded flex items-center justify-center border-2 ${selectedTools[tool.id] ? '' : 'border-gray-300'}`} style={selectedTools[tool.id] ? { backgroundColor: COLORS.primary, borderColor: COLORS.primary } : {}}>
+                  {CONFIG.tools.filter(tool => tool.id !== 'other').map((tool) => (
+                    <button key={tool.id} type="button" onClick={() => setSelectedTools(prev => ({ ...prev, [tool.id]: !prev[tool.id] }))} className={`flex items-center justify-center gap-2 px-3 py-3 rounded-xl border-2 transition-all text-center ${selectedTools[tool.id] ? '' : 'border-gray-200 hover:border-gray-300'}`} style={selectedTools[tool.id] ? { borderColor: COLORS.primary, backgroundColor: COLORS.primary + '10' } : {}}>
+                      <div className={`w-4 h-4 rounded flex items-center justify-center border-2 flex-shrink-0 ${selectedTools[tool.id] ? '' : 'border-gray-300'}`} style={selectedTools[tool.id] ? { backgroundColor: COLORS.primary, borderColor: COLORS.primary } : {}}>
                         {selectedTools[tool.id] && <Check className="w-2.5 h-2.5 text-white" />}
                       </div>
                       <span className="font-medium text-gray-700 text-sm">{tool.label}</span>
                     </button>
                   ))}
-                  <div className="space-y-2">
-                    <button type="button" onClick={() => setSelectedTools(prev => ({ ...prev, other: !prev.other }))} className={`w-full flex items-center justify-center gap-2 px-3 py-3 rounded-xl border-2 transition-all ${selectedTools.other ? '' : 'border-gray-200 hover:border-gray-300'}`} style={selectedTools.other ? { borderColor: COLORS.primary, backgroundColor: COLORS.primary + '10' } : {}}>
-                      <div className={`w-4 h-4 rounded flex items-center justify-center border-2 ${selectedTools.other ? '' : 'border-gray-300'}`} style={selectedTools.other ? { backgroundColor: COLORS.primary, borderColor: COLORS.primary } : {}}>
-                        {selectedTools.other && <Check className="w-2.5 h-2.5 text-white" />}
-                      </div>
-                      <span className="font-medium text-gray-700 text-sm">Other</span>
-                    </button>
-                    {selectedTools.other && <input type="text" value={otherToolNames.other || ''} onChange={(e) => setOtherToolNames(prev => ({ ...prev, other: e.target.value }))} placeholder="Tool name..." className="w-full bg-white border border-gray-300 rounded-lg px-3 py-2 text-gray-900 text-sm" />}
-                  </div>
                 </div>
+                {/* Other tool on its own row */}
+                {(() => {
+                  const otherTool = CONFIG.tools.find(tool => tool.id === 'other');
+                  if (!otherTool) return null;
+                  const isSelected = selectedTools[otherTool.id];
+                  return (
+                    <div className="space-y-2 pt-3">
+                      <div className="flex items-center gap-3">
+                        <button type="button" onClick={() => setSelectedTools(prev => ({ ...prev, [otherTool.id]: !prev[otherTool.id] }))} className={`flex items-center justify-center gap-2 px-4 py-3 rounded-xl border-2 transition-all ${isSelected ? '' : 'border-gray-200 hover:border-gray-300'}`} style={isSelected ? { borderColor: COLORS.primary, backgroundColor: COLORS.primary + '10' } : {}}>
+                          <div className={`w-4 h-4 rounded flex items-center justify-center border-2 flex-shrink-0 ${isSelected ? '' : 'border-gray-300'}`} style={isSelected ? { backgroundColor: COLORS.primary, borderColor: COLORS.primary } : {}}>
+                            {isSelected && <Check className="w-2.5 h-2.5 text-white" />}
+                          </div>
+                          <span className="font-medium text-gray-700 text-sm">Other</span>
+                        </button>
+                        {isSelected && (
+                          <input
+                            type="text"
+                            value={otherToolNames[otherTool.id] || ''}
+                            onChange={(e) => setOtherToolNames(prev => ({ ...prev, [otherTool.id]: e.target.value }))}
+                            placeholder="Enter tool name (required)..."
+                            className="flex-1 bg-white border border-gray-300 rounded-lg px-3 py-2.5 text-gray-900 text-sm"
+                          />
+                        )}
+                      </div>
+                      {isSelected && (
+                        <p className="text-xs text-gray-500 italic ml-1">Entering a new tool will save it for future use.</p>
+                      )}
+                    </div>
+                  );
+                })()}
               </div>
 
               {/* Section 4: Impact */}
