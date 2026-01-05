@@ -131,6 +131,12 @@ def get_tool(tool_id: int) -> Optional[dict]:
 def create_tool(tool: ToolCreate) -> dict:
     conn = get_db_connection()
     cursor = conn.cursor()
+    # Check if tool already exists (case-insensitive)
+    cursor.execute("SELECT id FROM tools WHERE LOWER(name) = LOWER(?)", (tool.name,))
+    existing = cursor.fetchone()
+    if existing:
+        conn.close()
+        return get_tool(existing['id'])
     cursor.execute("INSERT INTO tools (name) VALUES (?)", (tool.name,))
     conn.commit()
     tool_id = cursor.lastrowid
@@ -164,6 +170,12 @@ def get_capability(capability_id: int) -> Optional[dict]:
 def create_capability(cap: CapabilityCreate) -> dict:
     conn = get_db_connection()
     cursor = conn.cursor()
+    # Check if capability already exists (case-insensitive)
+    cursor.execute("SELECT id FROM capabilities WHERE LOWER(name) = LOWER(?)", (cap.name,))
+    existing = cursor.fetchone()
+    if existing:
+        conn.close()
+        return get_capability(existing['id'])
     cursor.execute("INSERT INTO capabilities (name) VALUES (?)", (cap.name,))
     conn.commit()
     cap_id = cursor.lastrowid
