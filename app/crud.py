@@ -812,3 +812,152 @@ def clear_and_reload_config(functions: List[str], teams: Dict[str, List[str]],
 
     conn.commit()
     conn.close()
+
+
+# ============ Export/Import Helper Functions ============
+
+def create_function_by_name(name: str) -> dict:
+    """Create a function by name only."""
+    conn = get_db_connection()
+    cursor = conn.cursor()
+    cursor.execute("INSERT INTO functions (name) VALUES (?)", (name,))
+    conn.commit()
+    function_id = cursor.lastrowid
+    conn.close()
+    return get_function(function_id)
+
+
+def create_team_by_name(function_id: int, name: str) -> dict:
+    """Create a team by function_id and name."""
+    conn = get_db_connection()
+    cursor = conn.cursor()
+    cursor.execute("INSERT INTO teams (function_id, name) VALUES (?, ?)", (function_id, name))
+    conn.commit()
+    team_id = cursor.lastrowid
+    conn.close()
+    return get_team(team_id)
+
+
+def create_tool_by_name(name: str) -> dict:
+    """Create a tool by name only."""
+    conn = get_db_connection()
+    cursor = conn.cursor()
+    cursor.execute("INSERT INTO tools (name) VALUES (?)", (name,))
+    conn.commit()
+    tool_id = cursor.lastrowid
+    conn.close()
+    return get_tool(tool_id)
+
+
+def create_capability_by_name(name: str) -> dict:
+    """Create a capability by name only."""
+    conn = get_db_connection()
+    cursor = conn.cursor()
+    cursor.execute("INSERT INTO capabilities (name) VALUES (?)", (name,))
+    conn.commit()
+    capability_id = cursor.lastrowid
+    conn.close()
+    return get_capability(capability_id)
+
+
+def clear_functions():
+    """Clear all functions (also clears teams due to foreign key)."""
+    conn = get_db_connection()
+    cursor = conn.cursor()
+    cursor.execute("DELETE FROM teams")  # Clear teams first
+    cursor.execute("DELETE FROM functions")
+    conn.commit()
+    conn.close()
+
+
+def clear_teams():
+    """Clear all teams."""
+    conn = get_db_connection()
+    cursor = conn.cursor()
+    cursor.execute("DELETE FROM teams")
+    conn.commit()
+    conn.close()
+
+
+def clear_tools():
+    """Clear all tools."""
+    conn = get_db_connection()
+    cursor = conn.cursor()
+    cursor.execute("DELETE FROM tools")
+    conn.commit()
+    conn.close()
+
+
+def clear_capabilities():
+    """Clear all capabilities."""
+    conn = get_db_connection()
+    cursor = conn.cursor()
+    cursor.execute("DELETE FROM capabilities")
+    conn.commit()
+    conn.close()
+
+
+def clear_all_responses():
+    """Clear all responses."""
+    conn = get_db_connection()
+    cursor = conn.cursor()
+    cursor.execute("DELETE FROM responses")
+    conn.commit()
+    conn.close()
+
+
+def create_response_from_dict(data: dict) -> dict:
+    """Create a response from a dictionary (for import)."""
+    conn = get_db_connection()
+    cursor = conn.cursor()
+
+    cursor.execute("""
+        INSERT INTO responses (
+            function_id, team_id, method_type, capability_id, capability_other,
+            description, tools_used, other_tools,
+            impact1_type, impact1_value, impact1_frequency, impact1_time_unit, impact1_annual_value, impact1_description,
+            impact2_type, impact2_value, impact2_frequency, impact2_time_unit, impact2_annual_value, impact2_description,
+            impact3_type, impact3_value, impact3_frequency, impact3_time_unit, impact3_annual_value, impact3_description,
+            impact4_type, impact4_value, impact4_frequency, impact4_time_unit, impact4_annual_value, impact4_description,
+            submitted_by
+        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+    """, (
+        data.get('function_id'),
+        data.get('team_id'),
+        data.get('method_type'),
+        data.get('capability_id'),
+        data.get('capability_other'),
+        data.get('description'),
+        data.get('tools_used'),
+        data.get('other_tools'),
+        data.get('impact1_type'),
+        data.get('impact1_value'),
+        data.get('impact1_frequency'),
+        data.get('impact1_time_unit'),
+        data.get('impact1_annual_value'),
+        data.get('impact1_description'),
+        data.get('impact2_type'),
+        data.get('impact2_value'),
+        data.get('impact2_frequency'),
+        data.get('impact2_time_unit'),
+        data.get('impact2_annual_value'),
+        data.get('impact2_description'),
+        data.get('impact3_type'),
+        data.get('impact3_value'),
+        data.get('impact3_frequency'),
+        data.get('impact3_time_unit'),
+        data.get('impact3_annual_value'),
+        data.get('impact3_description'),
+        data.get('impact4_type'),
+        data.get('impact4_value'),
+        data.get('impact4_frequency'),
+        data.get('impact4_time_unit'),
+        data.get('impact4_annual_value'),
+        data.get('impact4_description'),
+        data.get('submitted_by')
+    ))
+
+    conn.commit()
+    response_id = cursor.lastrowid
+    conn.close()
+    return get_response(response_id)

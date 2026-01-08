@@ -6,7 +6,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from pathlib import Path
 
 from .database import init_db, seed_sample_data, DATABASE_PATH
-from .routes import config_router, responses_router
+from .routes import config_router, responses_router, export_import_router
 
 # Initialize FastAPI app
 app = FastAPI(
@@ -27,6 +27,7 @@ app.add_middleware(
 # Include routers
 app.include_router(config_router)
 app.include_router(responses_router)
+app.include_router(export_import_router)
 
 # Static files directory
 STATIC_DIR = Path(__file__).parent / "static"
