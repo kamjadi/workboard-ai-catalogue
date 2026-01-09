@@ -32,8 +32,8 @@
 
     <!-- Title -->
     <div class="text-center mb-8">
-      <h1 class="text-2xl font-bold text-gray-900 mb-2">WorkBoard Internal</h1>
-      <h2 class="text-xl font-semibold" style="color: #52bad5;">AI Catalog</h2>
+      <h1 class="text-2xl font-bold text-gray-900 mb-1">WorkBoard Internal</h1>
+      <h2 class="text-2xl font-bold text-gray-900">AI Catalog</h2>
       <p class="text-sm text-gray-500 mt-2">V2.0</p>
     </div>
 
@@ -125,12 +125,10 @@
 
         // Check if password change is required
         if (data.user && data.user.must_change_password) {
-          // Store flag for redirect
-          sessionStorage.setItem('must_change_password', 'true');
+          window.location.href = '/change-password';
+        } else {
+          window.location.href = '/';
         }
-
-        // Redirect to home page
-        window.location.href = '/';
 
       } catch (error) {
         errorDiv.textContent = error.message;

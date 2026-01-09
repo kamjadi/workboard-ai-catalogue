@@ -3,6 +3,7 @@ from fastapi.responses import RedirectResponse, JSONResponse
 from pydantic import BaseModel
 from typing import Optional
 import bcrypt
+import re
 
 from .. import crud
 
@@ -10,6 +11,17 @@ router = APIRouter(prefix="/api/auth", tags=["auth"])
 
 SESSION_COOKIE_NAME = "session_token"
 SESSION_HOURS = 24
+
+
+def validate_password(password: str) -> tuple[bool, str]:
+    """Validate password meets requirements: 8+ chars, 1 number, 1 special char."""
+    if len(password) < 8:
+        return False, "Password must be at least 8 characters long"
+    if not re.search(r'\d', password):
+        return False, "Password must contain at least 1 number"
+    if not re.search(r'[!@#$%^&*()_+\-=\[\]{};\':"\\|,.<>\/?~`]', password):
+        return False, "Password must contain at least 1 special character"
+    return True, ""
 
 
 # Pydantic models
@@ -146,6 +158,11 @@ async def change_password(request: ChangePasswordRequest, session: dict = Depend
     if not bcrypt.checkpw(request.current_password.encode('utf-8'), user['password_hash'].encode('utf-8')):
         raise HTTPException(status_code=401, detail="Current password is incorrect")
 
+    # Validate new password
+    is_valid, error_msg = validate_password(request.new_password)
+    if not is_valid:
+        raise HTTPException(status_code=400, detail=error_msg)
+
     # Hash new password
     new_hash = bcrypt.hashpw(request.new_password.encode('utf-8'), bcrypt.gensalt()).decode('utf-8')
 
@@ -174,11 +191,16 @@ async def create_user(request: CreateUserRequest, session: dict = Depends(requir
     if request.role not in ['admin', 'user']:
         raise HTTPException(status_code=400, detail="Role must be 'admin' or 'user'")
 
+    # Validate password
+    is_valid, error_msg = validate_password(request.password)
+    if not is_valid:
+        raise HTTPException(status_code=400, detail=error_msg)
+
     # Hash password
     password_hash = bcrypt.hashpw(request.password.encode('utf-8'), bcrypt.gensalt()).decode('utf-8')
 
-    # Create user
-    user = crud.create_user(request.username, password_hash, request.role)
+    # Create user (they must change password on first login)
+    user = crud.create_user(request.username, password_hash, request.role, must_change_password=True)
     return user
 
 
@@ -242,6 +264,11 @@ async def reset_user_password(user_id: int, request: ResetPasswordRequest, sessi
     user = crud.get_user(user_id)
     if not user:
         raise HTTPException(status_code=404, detail="User not found")
+
+    # Validate new password
+    is_valid, error_msg = validate_password(request.new_password)
+    if not is_valid:
+        raise HTTPException(status_code=400, detail=error_msg)
 
     # Hash new password
     password_hash = bcrypt.hashpw(request.new_password.encode('utf-8'), bcrypt.gensalt()).decode('utf-8')

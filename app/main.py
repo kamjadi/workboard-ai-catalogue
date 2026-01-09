@@ -73,6 +73,17 @@ class AuthMiddleware(BaseHTTPMiddleware):
             # For page requests, redirect to login
             return RedirectResponse(url="/login", status_code=302)
 
+        # Force password change if required (except for change-password page/api and logout)
+        password_change_paths = {"/change-password", "/api/auth/change-password", "/api/auth/logout", "/api/auth/me"}
+        if session.get('must_change_password') and path not in password_change_paths:
+            if path.startswith("/api/"):
+                from fastapi.responses import JSONResponse
+                return JSONResponse(
+                    status_code=403,
+                    content={"detail": "Password change required"}
+                )
+            return RedirectResponse(url="/change-password", status_code=302)
+
         # Check admin-only paths
         if path in ADMIN_PATHS:
             if session.get('role') != 'admin':
@@ -124,6 +135,13 @@ app.mount("/static", StaticFiles(directory=STATIC_DIR), name="static")
 async def login_page():
     """Serve the login page."""
     return FileResponse(STATIC_DIR / "login.html")
+
+
+# Change password page (requires auth but allowed even if must_change_password)
+@app.get("/change-password")
+async def change_password_page():
+    """Serve the change password page."""
+    return FileResponse(STATIC_DIR / "change-password.html")
 
 
 # Protected page routes

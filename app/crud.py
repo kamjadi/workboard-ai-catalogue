@@ -1003,14 +1003,14 @@ def get_user_by_username(username: str) -> Optional[dict]:
     return dict_from_row(row) if row else None
 
 
-def create_user(username: str, password_hash: str, role: str = 'user') -> dict:
+def create_user(username: str, password_hash: str, role: str = 'user', must_change_password: bool = True) -> dict:
     """Create a new user."""
     conn = get_db_connection()
     cursor = conn.cursor()
     cursor.execute("""
         INSERT INTO users (username, password_hash, role, must_change_password)
-        VALUES (?, ?, ?, 1)
-    """, (username, password_hash, role))
+        VALUES (?, ?, ?, ?)
+    """, (username, password_hash, role, 1 if must_change_password else 0))
     conn.commit()
     user_id = cursor.lastrowid
     conn.close()
