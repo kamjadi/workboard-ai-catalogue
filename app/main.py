@@ -24,10 +24,10 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# Include routers
+# Include routers (export_import_router first to ensure /responses/export matches before /responses/{id})
 app.include_router(config_router)
-app.include_router(responses_router)
 app.include_router(export_import_router)
+app.include_router(responses_router)
 
 # Static files directory
 STATIC_DIR = Path(__file__).parent / "static"
