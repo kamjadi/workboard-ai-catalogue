@@ -37,6 +37,9 @@
     const User = ({ className }) => <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>;
     const AlertTriangle = ({ className }) => <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3Z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>;
     const ChevronDown = ({ className }) => <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="m6 9 6 6 6-6"/></svg>;
+    const Table = ({ className }) => <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M9 3H5a2 2 0 0 0-2 2v4m6-6h10a2 2 0 0 1 2 2v4M9 3v18m0 0h10a2 2 0 0 0 2-2V9M9 21H5a2 2 0 0 1-2-2V9m0 0h18"/></svg>;
+    const Minus = ({ className }) => <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><line x1="5" y1="12" x2="19" y2="12"/></svg>;
+    const Check = ({ className }) => <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><polyline points="20 6 9 17 4 12"/></svg>;
 
     const COLORS = {
       primary: '#52bad5',
@@ -70,6 +73,7 @@
 
       // Modals
       const [showAddModal, setShowAddModal] = useState(false);
+      const [showBulkModal, setShowBulkModal] = useState(false);
       const [showEditModal, setShowEditModal] = useState(false);
       const [showDeleteModal, setShowDeleteModal] = useState(false);
       const [showResetModal, setShowResetModal] = useState(false);
@@ -79,6 +83,16 @@
       const [formData, setFormData] = useState({ username: '', password: '', role: 'user' });
       const [resetPassword, setResetPassword] = useState('');
       const [saving, setSaving] = useState(false);
+
+      // Bulk import state
+      const [bulkRows, setBulkRows] = useState([
+        { username: '', password: 'changeme', role: 'user' },
+        { username: '', password: 'changeme', role: 'user' },
+        { username: '', password: 'changeme', role: 'user' },
+        { username: '', password: 'changeme', role: 'user' },
+        { username: '', password: 'changeme', role: 'user' },
+      ]);
+      const [bulkResults, setBulkResults] = useState(null);
 
       const fetchUsers = async () => {
         try {
@@ -193,6 +207,67 @@
         }
       };
 
+      // Bulk import handlers
+      const updateBulkRow = (index, field, value) => {
+        setBulkRows(prev => {
+          const updated = [...prev];
+          updated[index] = { ...updated[index], [field]: value };
+          return updated;
+        });
+      };
+
+      const addBulkRow = () => {
+        setBulkRows(prev => [...prev, { username: '', password: 'changeme', role: 'user' }]);
+      };
+
+      const removeBulkRow = (index) => {
+        if (bulkRows.length > 1) {
+          setBulkRows(prev => prev.filter((_, i) => i !== index));
+        }
+      };
+
+      const resetBulkForm = () => {
+        setBulkRows([
+          { username: '', password: 'changeme', role: 'user' },
+          { username: '', password: 'changeme', role: 'user' },
+          { username: '', password: 'changeme', role: 'user' },
+          { username: '', password: 'changeme', role: 'user' },
+          { username: '', password: 'changeme', role: 'user' },
+        ]);
+        setBulkResults(null);
+      };
+
+      const handleBulkImport = async () => {
+        setSaving(true);
+        setBulkResults(null);
+        try {
+          // Filter out empty rows
+          const validUsers = bulkRows.filter(row => row.username.trim());
+          if (validUsers.length === 0) {
+            setError('Please enter at least one username');
+            return;
+          }
+
+          const res = await fetch('/api/auth/users/bulk', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ users: validUsers })
+          });
+
+          const data = await res.json();
+          if (!res.ok) {
+            throw new Error(data.detail || 'Failed to create users');
+          }
+
+          setBulkResults(data);
+          await fetchUsers();
+        } catch (err) {
+          setError(err.message);
+        } finally {
+          setSaving(false);
+        }
+      };
+
       const handleLogout = async () => {
         await fetch('/api/auth/logout', { method: 'POST' });
         window.location.href = '/login';
@@ -259,17 +334,30 @@
                   <Users className="w-5 h-5" style={{ color: COLORS.primary }} />
                   Users ({users.length})
                 </h3>
-                <button
-                  onClick={() => {
-                    setFormData({ username: '', password: '', role: 'user' });
-                    setShowAddModal(true);
-                  }}
-                  className="flex items-center gap-2 px-3 py-1.5 rounded-lg text-white text-sm font-medium hover:opacity-90"
-                  style={{ backgroundColor: COLORS.primary }}
-                >
-                  <Plus className="w-4 h-4" />
-                  Add User
-                </button>
+                <div className="flex gap-2">
+                  <button
+                    onClick={() => {
+                      resetBulkForm();
+                      setShowBulkModal(true);
+                    }}
+                    className="flex items-center gap-2 px-3 py-1.5 rounded-lg text-sm font-medium border-2 hover:bg-gray-50"
+                    style={{ borderColor: COLORS.primary, color: COLORS.primary }}
+                  >
+                    <Table className="w-4 h-4" />
+                    Bulk Import
+                  </button>
+                  <button
+                    onClick={() => {
+                      setFormData({ username: '', password: '', role: 'user' });
+                      setShowAddModal(true);
+                    }}
+                    className="flex items-center gap-2 px-3 py-1.5 rounded-lg text-white text-sm font-medium hover:opacity-90"
+                    style={{ backgroundColor: COLORS.primary }}
+                  >
+                    <Plus className="w-4 h-4" />
+                    Add User
+                  </button>
+                </div>
               </div>
 
               <table className="w-full">
@@ -413,6 +501,142 @@
                     style={{ backgroundColor: COLORS.primary }}
                   >
                     {saving ? 'Creating...' : 'Create User'}
+                  </button>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* Bulk Import Modal */}
+          {showBulkModal && (
+            <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+              <div className="bg-white rounded-2xl shadow-xl max-w-4xl w-full p-6 max-h-[90vh] overflow-hidden flex flex-col">
+                <div className="flex items-center justify-between mb-4">
+                  <div>
+                    <h3 className="text-xl font-semibold text-gray-900">Bulk Import Users</h3>
+                    <p className="text-sm text-gray-500">Add multiple users at once. Empty rows will be skipped.</p>
+                  </div>
+                  <button onClick={() => setShowBulkModal(false)} className="p-2 hover:bg-gray-100 rounded-lg">
+                    <X className="w-5 h-5 text-gray-500" />
+                  </button>
+                </div>
+
+                {/* Results banner */}
+                {bulkResults && (
+                  <div className={`mb-4 p-4 rounded-xl ${bulkResults.created === bulkResults.total ? 'bg-green-50 border border-green-200' : 'bg-amber-50 border border-amber-200'}`}>
+                    <div className="flex items-center gap-2">
+                      <Check className={`w-5 h-5 ${bulkResults.created === bulkResults.total ? 'text-green-600' : 'text-amber-600'}`} />
+                      <span className="font-medium">
+                        {bulkResults.created} of {bulkResults.total} users created successfully
+                      </span>
+                    </div>
+                    {bulkResults.results.some(r => !r.success) && (
+                      <div className="mt-2 text-sm">
+                        <p className="font-medium text-amber-700">Failed:</p>
+                        <ul className="list-disc ml-5 text-amber-600">
+                          {bulkResults.results.filter(r => !r.success).map((r, i) => (
+                            <li key={i}>{r.username}: {r.error}</li>
+                          ))}
+                        </ul>
+                      </div>
+                    )}
+                  </div>
+                )}
+
+                {/* Spreadsheet table */}
+                <div className="flex-1 overflow-auto border border-gray-200 rounded-xl">
+                  <table className="w-full">
+                    <thead className="bg-gray-50 sticky top-0">
+                      <tr>
+                        <th className="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase w-8">#</th>
+                        <th className="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase">Username *</th>
+                        <th className="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase">Password</th>
+                        <th className="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase w-32">Role</th>
+                        <th className="px-4 py-3 text-center text-xs font-semibold text-gray-600 uppercase w-16">Remove</th>
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y divide-gray-200">
+                      {bulkRows.map((row, index) => (
+                        <tr key={index} className="hover:bg-gray-50">
+                          <td className="px-4 py-2 text-sm text-gray-400">{index + 1}</td>
+                          <td className="px-4 py-2">
+                            <input
+                              type="text"
+                              value={row.username}
+                              onChange={e => updateBulkRow(index, 'username', e.target.value)}
+                              className="w-full px-3 py-1.5 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm"
+                              placeholder="Enter username"
+                            />
+                          </td>
+                          <td className="px-4 py-2">
+                            <input
+                              type="text"
+                              value={row.password}
+                              onChange={e => updateBulkRow(index, 'password', e.target.value)}
+                              className="w-full px-3 py-1.5 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm"
+                              placeholder="changeme"
+                            />
+                          </td>
+                          <td className="px-4 py-2">
+                            <div className="relative">
+                              <select
+                                value={row.role}
+                                onChange={e => updateBulkRow(index, 'role', e.target.value)}
+                                className="w-full appearance-none px-3 py-1.5 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm"
+                              >
+                                <option value="user">User</option>
+                                <option value="admin">Admin</option>
+                              </select>
+                              <ChevronDown className="absolute right-2 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 pointer-events-none" />
+                            </div>
+                          </td>
+                          <td className="px-4 py-2 text-center">
+                            <button
+                              onClick={() => removeBulkRow(index)}
+                              disabled={bulkRows.length <= 1}
+                              className="p-1.5 text-gray-400 hover:text-red-500 hover:bg-red-50 rounded-lg disabled:opacity-30 disabled:cursor-not-allowed"
+                            >
+                              <Minus className="w-4 h-4" />
+                            </button>
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+
+                {/* Add row button */}
+                <button
+                  onClick={addBulkRow}
+                  className="mt-3 flex items-center gap-2 px-3 py-1.5 text-sm font-medium hover:bg-gray-100 rounded-lg self-start"
+                  style={{ color: COLORS.primary }}
+                >
+                  <Plus className="w-4 h-4" />
+                  Add Row
+                </button>
+
+                <div className="text-xs text-gray-500 mt-2">
+                  <p>• Password defaults to "changeme" if left empty</p>
+                  <p>• Users will be required to change their password on first login</p>
+                </div>
+
+                {/* Actions */}
+                <div className="flex gap-3 justify-end mt-4 pt-4 border-t border-gray-200">
+                  <button onClick={() => setShowBulkModal(false)} className="px-4 py-2 rounded-lg border border-gray-300 text-gray-700 font-medium hover:bg-gray-50">
+                    Close
+                  </button>
+                  <button
+                    onClick={handleBulkImport}
+                    disabled={saving || bulkRows.every(r => !r.username.trim())}
+                    className="px-4 py-2 rounded-lg text-white font-medium hover:opacity-90 disabled:opacity-50 flex items-center gap-2"
+                    style={{ backgroundColor: COLORS.primary }}
+                  >
+                    {saving ? 'Creating...' : (
+                      <>
+                        <Check className="w-4 h-4" />
+                        Create Users
+                      </>
+                    )}
                   </button>
                 </div>
               </div>

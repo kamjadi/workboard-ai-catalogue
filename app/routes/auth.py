@@ -51,6 +51,10 @@ class ResetPasswordRequest(BaseModel):
     new_password: str
 
 
+class BulkUserRequest(BaseModel):
+    users: list[dict]  # List of {username, password, role}
+
+
 # Helper to get current session from cookie
 def get_current_session(request: Request) -> Optional[dict]:
     token = request.cookies.get(SESSION_COOKIE_NAME)
@@ -191,11 +195,7 @@ async def create_user(request: CreateUserRequest, session: dict = Depends(requir
     if request.role not in ['admin', 'user']:
         raise HTTPException(status_code=400, detail="Role must be 'admin' or 'user'")
 
-    # Validate password
-    is_valid, error_msg = validate_password(request.password)
-    if not is_valid:
-        raise HTTPException(status_code=400, detail=error_msg)
-
+    # Note: No password validation for admin-created users (allows 'changeme' etc.)
     # Hash password
     password_hash = bcrypt.hashpw(request.password.encode('utf-8'), bcrypt.gensalt()).decode('utf-8')
 
@@ -265,11 +265,7 @@ async def reset_user_password(user_id: int, request: ResetPasswordRequest, sessi
     if not user:
         raise HTTPException(status_code=404, detail="User not found")
 
-    # Validate new password
-    is_valid, error_msg = validate_password(request.new_password)
-    if not is_valid:
-        raise HTTPException(status_code=400, detail=error_msg)
-
+    # Note: No password validation for admin reset (allows 'changeme' etc.)
     # Hash new password
     password_hash = bcrypt.hashpw(request.new_password.encode('utf-8'), bcrypt.gensalt()).decode('utf-8')
 
@@ -280,3 +276,62 @@ async def reset_user_password(user_id: int, request: ResetPasswordRequest, sessi
     crud.delete_user_sessions(user_id)
 
     return {"success": True, "message": "Password reset successfully"}
+
+
+@router.post("/users/bulk")
+async def create_users_bulk(request: BulkUserRequest, session: dict = Depends(require_admin)):
+    """Create multiple users at once (admin only)."""
+    results = []
+
+    for user_data in request.users:
+        username = user_data.get('username', '').strip()
+        password = user_data.get('password', '').strip()
+        role = user_data.get('role', 'user').strip()
+
+        # Skip empty rows
+        if not username:
+            continue
+
+        # Default password if not provided
+        if not password:
+            password = 'changeme'
+
+        # Default role
+        if role not in ['admin', 'user']:
+            role = 'user'
+
+        # Check if username exists
+        existing = crud.get_user_by_username(username)
+        if existing:
+            results.append({
+                'username': username,
+                'success': False,
+                'error': 'Username already exists'
+            })
+            continue
+
+        try:
+            # Hash password (no validation for admin bulk import)
+            password_hash = bcrypt.hashpw(password.encode('utf-8'), bcrypt.gensalt()).decode('utf-8')
+
+            # Create user with must_change_password=True
+            user = crud.create_user(username, password_hash, role, must_change_password=True)
+            results.append({
+                'username': username,
+                'success': True,
+                'id': user['id']
+            })
+        except Exception as e:
+            results.append({
+                'username': username,
+                'success': False,
+                'error': str(e)
+            })
+
+    success_count = sum(1 for r in results if r['success'])
+    return {
+        'success': True,
+        'created': success_count,
+        'total': len(results),
+        'results': results
+    }
