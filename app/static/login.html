@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Login - WorkBoard AI Catalog</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    body { font-family: 'DM Sans', system-ui, sans-serif; }
+    .gradient-bg {
+      background: linear-gradient(135deg, #52bad5 0%, #2d7a8c 50%, #1e5c6b 100%);
+    }
+    .glass-card {
+      background: rgba(255, 255, 255, 0.95);
+      backdrop-filter: blur(10px);
+    }
+    .input-focus:focus {
+      outline: none;
+      border-color: #52bad5;
+      box-shadow: 0 0 0 3px rgba(82, 186, 213, 0.2);
+    }
+  </style>
+</head>
+<body class="min-h-screen gradient-bg flex items-center justify-center p-4">
+
+  <div class="glass-card rounded-3xl shadow-2xl w-full max-w-md p-8 md:p-10">
+    <!-- Logo -->
+    <div class="flex justify-center mb-6">
+      <img src="/static/logo/workboard-logo-icon.png" alt="WorkBoard" class="h-16 w-auto" />
+    </div>
+
+    <!-- Title -->
+    <div class="text-center mb-8">
+      <h1 class="text-2xl font-bold text-gray-900 mb-2">WorkBoard Internal</h1>
+      <h2 class="text-xl font-semibold" style="color: #52bad5;">AI Catalog</h2>
+      <p class="text-sm text-gray-500 mt-2">V2.0</p>
+    </div>
+
+    <!-- Login Form -->
+    <form id="loginForm" class="space-y-5">
+      <div>
+        <label for="username" class="block text-sm font-medium text-gray-700 mb-1.5">Username</label>
+        <input
+          type="text"
+          id="username"
+          name="username"
+          required
+          autocomplete="username"
+          class="input-focus w-full px-4 py-3 border border-gray-300 rounded-xl text-gray-900 placeholder-gray-400 transition-all"
+          placeholder="Enter your username"
+        />
+      </div>
+
+      <div>
+        <label for="password" class="block text-sm font-medium text-gray-700 mb-1.5">Password</label>
+        <input
+          type="password"
+          id="password"
+          name="password"
+          required
+          autocomplete="current-password"
+          class="input-focus w-full px-4 py-3 border border-gray-300 rounded-xl text-gray-900 placeholder-gray-400 transition-all"
+          placeholder="Enter your password"
+        />
+      </div>
+
+      <!-- Error Message -->
+      <div id="errorMessage" class="hidden p-3 bg-red-50 border border-red-200 rounded-xl text-red-700 text-sm"></div>
+
+      <!-- Submit Button -->
+      <button
+        type="submit"
+        id="submitBtn"
+        class="w-full py-3 px-4 rounded-xl text-white font-semibold text-base transition-all hover:opacity-90 disabled:opacity-50 disabled:cursor-not-allowed"
+        style="background-color: #52bad5;"
+      >
+        Sign In
+      </button>
+    </form>
+
+    <!-- Footer -->
+    <div class="mt-8 text-center">
+      <p class="text-xs text-gray-400">
+        Tracking AI adoption and measuring business impact
+      </p>
+    </div>
+  </div>
+
+  <script>
+    const form = document.getElementById('loginForm');
+    const usernameInput = document.getElementById('username');
+    const passwordInput = document.getElementById('password');
+    const errorDiv = document.getElementById('errorMessage');
+    const submitBtn = document.getElementById('submitBtn');
+
+    form.addEventListener('submit', async (e) => {
+      e.preventDefault();
+
+      // Clear previous error
+      errorDiv.classList.add('hidden');
+      errorDiv.textContent = '';
+
+      // Disable button
+      submitBtn.disabled = true;
+      submitBtn.textContent = 'Signing in...';
+
+      try {
+        const response = await fetch('/api/auth/login', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            username: usernameInput.value,
+            password: passwordInput.value,
+          }),
+        });
+
+        const data = await response.json();
+
+        if (!response.ok) {
+          throw new Error(data.detail || 'Login failed');
+        }
+
+        // Check if password change is required
+        if (data.user && data.user.must_change_password) {
+          // Store flag for redirect
+          sessionStorage.setItem('must_change_password', 'true');
+        }
+
+        // Redirect to home page
+        window.location.href = '/';
+
+      } catch (error) {
+        errorDiv.textContent = error.message;
+        errorDiv.classList.remove('hidden');
+
+        // Re-enable button
+        submitBtn.disabled = false;
+        submitBtn.textContent = 'Sign In';
+
+        // Focus on password field for retry
+        passwordInput.value = '';
+        passwordInput.focus();
+      }
+    });
+
+    // Focus username on load
+    usernameInput.focus();
+
+    // Handle Enter key
+    passwordInput.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter') {
+        form.dispatchEvent(new Event('submit'));
+      }
+    });
+  </script>
+</body>
+</html>

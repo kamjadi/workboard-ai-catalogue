@@ -961,3 +961,248 @@ def create_response_from_dict(data: dict) -> dict:
     response_id = cursor.lastrowid
     conn.close()
     return get_response(response_id)
+
+
+# ============ Users CRUD ============
+
+def get_users() -> List[dict]:
+    """Get all users (excludes password hash)."""
+    conn = get_db_connection()
+    cursor = conn.cursor()
+    cursor.execute("""
+        SELECT id, username, role, active, must_change_password,
+               failed_login_attempts, locked_until, created_at, last_login
+        FROM users ORDER BY username
+    """)
+    rows = cursor.fetchall()
+    conn.close()
+    return [dict_from_row(row) for row in rows]
+
+
+def get_user(user_id: int) -> Optional[dict]:
+    """Get a user by ID (excludes password hash)."""
+    conn = get_db_connection()
+    cursor = conn.cursor()
+    cursor.execute("""
+        SELECT id, username, role, active, must_change_password,
+               failed_login_attempts, locked_until, created_at, last_login
+        FROM users WHERE id = ?
+    """, (user_id,))
+    row = cursor.fetchone()
+    conn.close()
+    return dict_from_row(row) if row else None
+
+
+def get_user_by_username(username: str) -> Optional[dict]:
+    """Get a user by username (includes password hash for auth)."""
+    conn = get_db_connection()
+    cursor = conn.cursor()
+    cursor.execute("SELECT * FROM users WHERE username = ?", (username,))
+    row = cursor.fetchone()
+    conn.close()
+    return dict_from_row(row) if row else None
+
+
+def create_user(username: str, password_hash: str, role: str = 'user') -> dict:
+    """Create a new user."""
+    conn = get_db_connection()
+    cursor = conn.cursor()
+    cursor.execute("""
+        INSERT INTO users (username, password_hash, role, must_change_password)
+        VALUES (?, ?, ?, 1)
+    """, (username, password_hash, role))
+    conn.commit()
+    user_id = cursor.lastrowid
+    conn.close()
+    return get_user(user_id)
+
+
+def update_user(user_id: int, username: str = None, role: str = None, active: bool = None) -> Optional[dict]:
+    """Update user fields."""
+    conn = get_db_connection()
+    cursor = conn.cursor()
+
+    updates = []
+    params = []
+
+    if username is not None:
+        updates.append("username = ?")
+        params.append(username)
+    if role is not None:
+        updates.append("role = ?")
+        params.append(role)
+    if active is not None:
+        updates.append("active = ?")
+        params.append(1 if active else 0)
+
+    if updates:
+        params.append(user_id)
+        cursor.execute(f"UPDATE users SET {', '.join(updates)} WHERE id = ?", params)
+        conn.commit()
+
+    conn.close()
+    return get_user(user_id)
+
+
+def update_user_password(user_id: int, password_hash: str, must_change: bool = False) -> bool:
+    """Update a user's password."""
+    conn = get_db_connection()
+    cursor = conn.cursor()
+    cursor.execute("""
+        UPDATE users SET password_hash = ?, must_change_password = ?
+        WHERE id = ?
+    """, (password_hash, 1 if must_change else 0, user_id))
+    conn.commit()
+    updated = cursor.rowcount > 0
+    conn.close()
+    return updated
+
+
+def delete_user(user_id: int) -> bool:
+    """Delete a user."""
+    conn = get_db_connection()
+    cursor = conn.cursor()
+
+    # Don't allow deleting the last admin
+    cursor.execute("SELECT COUNT(*) FROM users WHERE role = 'admin' AND id != ?", (user_id,))
+    other_admins = cursor.fetchone()[0]
+
+    cursor.execute("SELECT role FROM users WHERE id = ?", (user_id,))
+    user = cursor.fetchone()
+
+    if user and user['role'] == 'admin' and other_admins == 0:
+        conn.close()
+        return False
+
+    cursor.execute("DELETE FROM users WHERE id = ?", (user_id,))
+    conn.commit()
+    deleted = cursor.rowcount > 0
+    conn.close()
+    return deleted
+
+
+def record_login_attempt(user_id: int, success: bool) -> None:
+    """Record a login attempt."""
+    conn = get_db_connection()
+    cursor = conn.cursor()
+
+    if success:
+        cursor.execute("""
+            UPDATE users SET
+                last_login = CURRENT_TIMESTAMP,
+                failed_login_attempts = 0,
+                locked_until = NULL
+            WHERE id = ?
+        """, (user_id,))
+    else:
+        cursor.execute("""
+            UPDATE users SET failed_login_attempts = failed_login_attempts + 1
+            WHERE id = ?
+        """, (user_id,))
+
+        # Lock account after 5 failed attempts for 15 minutes
+        cursor.execute("""
+            UPDATE users SET locked_until = datetime('now', '+15 minutes')
+            WHERE id = ? AND failed_login_attempts >= 5
+        """, (user_id,))
+
+    conn.commit()
+    conn.close()
+
+
+def is_user_locked(user: dict) -> bool:
+    """Check if user is currently locked out."""
+    if not user.get('locked_until'):
+        return False
+
+    from datetime import datetime
+    locked_until = datetime.fromisoformat(user['locked_until'])
+    return datetime.now() < locked_until
+
+
+# ============ Sessions CRUD ============
+
+def create_session(user_id: int, hours: int = 24) -> str:
+    """Create a new session and return the token."""
+    import secrets
+
+    token = secrets.token_urlsafe(32)
+
+    conn = get_db_connection()
+    cursor = conn.cursor()
+
+    # Clean up expired sessions for this user
+    cursor.execute("DELETE FROM sessions WHERE user_id = ? AND expires_at < CURRENT_TIMESTAMP", (user_id,))
+
+    # Create new session
+    cursor.execute("""
+        INSERT INTO sessions (user_id, token, expires_at)
+        VALUES (?, ?, datetime('now', '+' || ? || ' hours'))
+    """, (user_id, token, hours))
+
+    conn.commit()
+    conn.close()
+
+    return token
+
+
+def get_session(token: str) -> Optional[dict]:
+    """Get session by token if valid and not expired."""
+    conn = get_db_connection()
+    cursor = conn.cursor()
+    cursor.execute("""
+        SELECT s.*, u.username, u.role, u.must_change_password
+        FROM sessions s
+        JOIN users u ON s.user_id = u.id
+        WHERE s.token = ? AND s.expires_at > CURRENT_TIMESTAMP AND u.active = 1
+    """, (token,))
+    row = cursor.fetchone()
+    conn.close()
+    return dict_from_row(row) if row else None
+
+
+def extend_session(token: str, hours: int = 24) -> bool:
+    """Extend a session's expiration."""
+    conn = get_db_connection()
+    cursor = conn.cursor()
+    cursor.execute("""
+        UPDATE sessions SET expires_at = datetime('now', '+' || ? || ' hours')
+        WHERE token = ? AND expires_at > CURRENT_TIMESTAMP
+    """, (hours, token))
+    conn.commit()
+    updated = cursor.rowcount > 0
+    conn.close()
+    return updated
+
+
+def delete_session(token: str) -> bool:
+    """Delete a session (logout)."""
+    conn = get_db_connection()
+    cursor = conn.cursor()
+    cursor.execute("DELETE FROM sessions WHERE token = ?", (token,))
+    conn.commit()
+    deleted = cursor.rowcount > 0
+    conn.close()
+    return deleted
+
+
+def delete_user_sessions(user_id: int) -> int:
+    """Delete all sessions for a user."""
+    conn = get_db_connection()
+    cursor = conn.cursor()
+    cursor.execute("DELETE FROM sessions WHERE user_id = ?", (user_id,))
+    conn.commit()
+    deleted = cursor.rowcount
+    conn.close()
+    return deleted
+
+
+def cleanup_expired_sessions() -> int:
+    """Clean up expired sessions."""
+    conn = get_db_connection()
+    cursor = conn.cursor()
+    cursor.execute("DELETE FROM sessions WHERE expires_at < CURRENT_TIMESTAMP")
+    conn.commit()
+    deleted = cursor.rowcount
+    conn.close()
+    return deleted

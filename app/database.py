@@ -1,5 +1,6 @@
 import sqlite3
 import os
+import secrets
 from pathlib import Path
 
 # Database path - use DATABASE_DIR env var for Railway volume, fallback to local ./data
@@ -128,6 +129,34 @@ def init_db():
         )
     """)
 
+    # Users table
+    cursor.execute("""
+        CREATE TABLE IF NOT EXISTS users (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            username TEXT NOT NULL UNIQUE COLLATE NOCASE,
+            password_hash TEXT NOT NULL,
+            role TEXT NOT NULL DEFAULT 'user' CHECK(role IN ('admin', 'user')),
+            active BOOLEAN DEFAULT 1,
+            must_change_password BOOLEAN DEFAULT 0,
+            failed_login_attempts INTEGER DEFAULT 0,
+            locked_until TIMESTAMP,
+            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+            last_login TIMESTAMP
+        )
+    """)
+
+    # Sessions table
+    cursor.execute("""
+        CREATE TABLE IF NOT EXISTS sessions (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            user_id INTEGER NOT NULL,
+            token TEXT NOT NULL UNIQUE,
+            expires_at TIMESTAMP NOT NULL,
+            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+            FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
+        )
+    """)
+
     conn.commit()
     conn.close()
 
@@ -179,7 +208,42 @@ def seed_sample_data():
     conn.close()
 
 
+def create_initial_admin():
+    """Create initial admin user if no users exist."""
+    try:
+        import bcrypt
+    except ImportError:
+        print("Warning: bcrypt not installed, skipping admin creation")
+        return False
+
+    conn = get_db_connection()
+    cursor = conn.cursor()
+
+    # Check if any users exist
+    cursor.execute("SELECT COUNT(*) FROM users")
+    count = cursor.fetchone()[0]
+
+    if count == 0:
+        # Get initial password from env var or use default
+        initial_password = os.environ.get("INITIAL_ADMIN_PASSWORD", "changeme")
+        password_hash = bcrypt.hashpw(initial_password.encode('utf-8'), bcrypt.gensalt()).decode('utf-8')
+
+        cursor.execute("""
+            INSERT INTO users (username, password_hash, role, must_change_password)
+            VALUES (?, ?, 'admin', 1)
+        """, ("admin", password_hash))
+
+        conn.commit()
+        conn.close()
+        print(f"Initial admin user created (username: admin, password: {initial_password})")
+        return True
+
+    conn.close()
+    return False
+
+
 if __name__ == "__main__":
     init_db()
     seed_sample_data()
+    create_initial_admin()
     print("Database initialized and seeded successfully!")
