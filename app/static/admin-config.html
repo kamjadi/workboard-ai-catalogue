@@ -319,16 +319,15 @@
       const [error, setError] = useState(null);
 
       // Import/Export states
-      const [importStatus, setImportStatus] = useState({ show: false, type: '', results: null, isExport: false });
+      const [importStatus, setImportStatus] = useState({ show: false, type: '', results: null });
       const [importing, setImporting] = useState(false);
-      const [exporting, setExporting] = useState(false);
-      const [importFilePath, setImportFilePath] = useState('');
-      const [importConfigPaths, setImportConfigPaths] = useState({
-        functions: '',
-        teams: '',
-        tools: '',
-        capabilities: ''
-      });
+      const entriesFileRef = useRef(null);
+      const configFileRefs = {
+        functions: useRef(null),
+        teams: useRef(null),
+        tools: useRef(null),
+        capabilities: useRef(null)
+      };
 
       // Fetch config
       const fetchConfig = async () => {
@@ -377,85 +376,66 @@
         setDeleteModal({ open: false, item: null, type: null });
       };
 
-      // Export handlers - write to server files
-      const handleExportEntries = async () => {
-        setExporting(true);
-        try {
-          const res = await fetch('/api/responses/export', { method: 'POST' });
-          const results = await res.json();
-          setImportStatus({ show: true, type: 'entries', results, isExport: true });
-        } catch (err) {
-          setError('Failed to export entries: ' + err.message);
-        } finally {
-          setExporting(false);
-        }
+      // Export handlers - browser download
+      const handleExportEntries = () => {
+        window.location.href = '/api/responses/export';
       };
 
-      const handleExportConfig = async (type) => {
-        setExporting(true);
-        try {
-          const res = await fetch(`/api/config/export/${type}`, { method: 'POST' });
-          const results = await res.json();
-          setImportStatus({ show: true, type, results, isExport: true });
-        } catch (err) {
-          setError(`Failed to export ${type}: ` + err.message);
-        } finally {
-          setExporting(false);
-        }
+      const handleExportConfig = (type) => {
+        window.location.href = `/api/config/export/${type}`;
       };
 
-      // Import handlers - read from server files
-      const handleImportEntries = async (mode = 'append') => {
-        if (!importFilePath.trim()) {
-          setError('Please enter a file path');
-          return;
-        }
+      // Import handlers - browser file upload
+      const handleImportEntries = async (event, mode = 'append') => {
+        const file = event.target.files?.[0];
+        if (!file) return;
 
         setImporting(true);
+        const formData = new FormData();
+        formData.append('file', file);
+
         try {
           const res = await fetch(`/api/responses/import?mode=${mode}`, {
             method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ file_path: importFilePath })
+            body: formData
           });
           const results = await res.json();
           if (!res.ok) {
             throw new Error(results.detail || 'Import failed');
           }
-          setImportStatus({ show: true, type: 'entries', results, isExport: false });
-          setImportFilePath('');
+          setImportStatus({ show: true, type: 'entries', results });
         } catch (err) {
           setError('Failed to import entries: ' + err.message);
         } finally {
           setImporting(false);
+          if (entriesFileRef.current) entriesFileRef.current.value = '';
         }
       };
 
-      const handleImportConfig = async (type, mode = 'merge') => {
-        const filePath = importConfigPaths[type];
-        if (!filePath.trim()) {
-          setError(`Please enter a file path for ${type}`);
-          return;
-        }
+      const handleImportConfig = async (type, event, mode = 'merge') => {
+        const file = event.target.files?.[0];
+        if (!file) return;
 
         setImporting(true);
+        const formData = new FormData();
+        formData.append('file', file);
+
         try {
           const res = await fetch(`/api/config/import/${type}?mode=${mode}`, {
             method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ file_path: filePath })
+            body: formData
           });
           const results = await res.json();
           if (!res.ok) {
             throw new Error(results.detail || 'Import failed');
           }
-          setImportStatus({ show: true, type, results, isExport: false });
-          setImportConfigPaths(prev => ({ ...prev, [type]: '' }));
+          setImportStatus({ show: true, type, results });
           await fetchConfig();
         } catch (err) {
           setError(`Failed to import ${type}: ` + err.message);
         } finally {
           setImporting(false);
+          if (configFileRefs[type]?.current) configFileRefs[type].current.value = '';
         }
       };
 
@@ -587,7 +567,7 @@
                   <Download className="w-5 h-5" style={{ color: COLORS.primary }} />
                   Export / Import Data
                 </h3>
-                <p className="text-sm text-gray-500 mt-1">Files are read from and written to the server's <code className="bg-gray-100 px-1 rounded">exports/</code> directory</p>
+                <p className="text-sm text-gray-500 mt-1">Download CSV files or upload from your computer</p>
               </div>
 
               <div className="p-6 space-y-6">
@@ -596,36 +576,33 @@
                   <h4 className="font-medium text-gray-900 mb-3">Export Entries (AI Usage Submissions)</h4>
                   <button
                     onClick={handleExportEntries}
-                    disabled={exporting}
-                    className="inline-flex items-center gap-2 px-4 py-2 rounded-lg text-white font-medium hover:opacity-90 transition-opacity disabled:opacity-50"
+                    className="inline-flex items-center gap-2 px-4 py-2 rounded-lg text-white font-medium hover:opacity-90 transition-opacity"
                     style={{ backgroundColor: COLORS.primary }}
                   >
                     <Download className="w-4 h-4" />
-                    {exporting ? 'Exporting...' : 'Export All Entries to CSV'}
+                    Export All Entries to CSV
                   </button>
                 </div>
 
                 {/* Import Entries */}
                 <div>
                   <h4 className="font-medium text-gray-900 mb-3">Import Entries</h4>
-                  <div className="flex items-center gap-3">
-                    <input
-                      type="text"
-                      value={importFilePath}
-                      onChange={(e) => setImportFilePath(e.target.value)}
-                      placeholder="e.g., exports/entries_20260108.csv or /full/path/to/file.csv"
-                      className="flex-1 max-w-lg px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
-                    />
-                    <button
-                      onClick={() => handleImportEntries('append')}
-                      disabled={importing || !importFilePath.trim()}
-                      className="inline-flex items-center gap-2 px-4 py-2 rounded-lg border border-gray-300 text-gray-700 font-medium hover:bg-gray-50 transition-colors disabled:opacity-50"
-                    >
-                      <Upload className="w-4 h-4" />
-                      {importing ? 'Importing...' : 'Import'}
-                    </button>
-                  </div>
-                  <p className="mt-2 text-sm text-gray-500">Enter full path or relative path from project root. Appends to existing entries.</p>
+                  <input
+                    ref={entriesFileRef}
+                    type="file"
+                    accept=".csv"
+                    onChange={(e) => handleImportEntries(e, 'append')}
+                    className="hidden"
+                    id="entries-file-input"
+                  />
+                  <label
+                    htmlFor="entries-file-input"
+                    className={`inline-flex items-center gap-2 px-4 py-2 rounded-lg border border-gray-300 text-gray-700 font-medium hover:bg-gray-50 transition-colors cursor-pointer ${importing ? 'opacity-50 pointer-events-none' : ''}`}
+                  >
+                    <Upload className="w-4 h-4" />
+                    {importing ? 'Importing...' : 'Select CSV File to Import'}
+                  </label>
+                  <p className="mt-2 text-sm text-gray-500">Appends entries from the CSV file to existing data.</p>
                 </div>
 
                 <hr className="border-gray-200" />
@@ -638,8 +615,7 @@
                       <button
                         key={type}
                         onClick={() => handleExportConfig(type)}
-                        disabled={exporting}
-                        className="inline-flex items-center gap-2 px-3 py-1.5 rounded-lg border border-gray-300 text-gray-700 text-sm font-medium hover:bg-gray-50 transition-colors disabled:opacity-50"
+                        className="inline-flex items-center gap-2 px-3 py-1.5 rounded-lg border border-gray-300 text-gray-700 text-sm font-medium hover:bg-gray-50 transition-colors"
                       >
                         <Download className="w-3.5 h-3.5" />
                         {type.charAt(0).toUpperCase() + type.slice(1)}
@@ -656,20 +632,20 @@
                       <div key={type} className="flex items-center gap-3">
                         <span className="w-24 text-sm font-medium text-gray-700">{type.charAt(0).toUpperCase() + type.slice(1)}:</span>
                         <input
-                          type="text"
-                          value={importConfigPaths[type]}
-                          onChange={(e) => setImportConfigPaths(prev => ({ ...prev, [type]: e.target.value }))}
-                          placeholder={`e.g., exports/${type}.csv`}
-                          className="flex-1 max-w-sm px-3 py-1.5 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                          ref={configFileRefs[type]}
+                          type="file"
+                          accept=".csv"
+                          onChange={(e) => handleImportConfig(type, e, 'merge')}
+                          className="hidden"
+                          id={`config-file-input-${type}`}
                         />
-                        <button
-                          onClick={() => handleImportConfig(type, 'merge')}
-                          disabled={importing || !importConfigPaths[type].trim()}
-                          className="inline-flex items-center gap-2 px-3 py-1.5 rounded-lg border border-gray-300 text-gray-700 text-sm font-medium hover:bg-gray-50 transition-colors disabled:opacity-50"
+                        <label
+                          htmlFor={`config-file-input-${type}`}
+                          className={`inline-flex items-center gap-2 px-3 py-1.5 rounded-lg border border-gray-300 text-gray-700 text-sm font-medium hover:bg-gray-50 transition-colors cursor-pointer ${importing ? 'opacity-50 pointer-events-none' : ''}`}
                         >
                           <Upload className="w-3.5 h-3.5" />
-                          Import
-                        </button>
+                          Select CSV
+                        </label>
                       </div>
                     ))}
                   </div>
@@ -680,77 +656,54 @@
               </div>
             </div>
 
-            {/* Export/Import Status Modal */}
+            {/* Import Status Modal */}
             {importStatus.show && (
               <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
                 <div className="bg-white rounded-2xl shadow-xl max-w-lg w-full p-6">
                   <div className="flex items-center justify-between mb-4">
-                    <h3 className="text-lg font-semibold text-gray-900">
-                      {importStatus.isExport ? 'Export Results' : 'Import Results'}
-                    </h3>
-                    <button onClick={() => setImportStatus({ show: false, type: '', results: null, isExport: false })} className="p-1 hover:bg-gray-100 rounded">
+                    <h3 className="text-lg font-semibold text-gray-900">Import Results</h3>
+                    <button onClick={() => setImportStatus({ show: false, type: '', results: null })} className="p-1 hover:bg-gray-100 rounded">
                       <X className="w-5 h-5 text-gray-500" />
                     </button>
                   </div>
 
                   {importStatus.results && (
                     <div className="space-y-3">
-                      {/* Export results */}
-                      {importStatus.isExport && (
-                        <>
-                          <div className="flex items-center gap-2 text-green-600">
-                            <Check className="w-5 h-5" />
-                            <span className="font-medium">
-                              {importStatus.results.records_exported} records exported successfully
-                            </span>
-                          </div>
-                          <div className="mt-3 p-3 bg-gray-50 rounded-lg">
-                            <div className="text-sm text-gray-600 mb-1">File saved to:</div>
-                            <code className="text-sm break-all text-gray-900">{importStatus.results.file_path}</code>
-                          </div>
-                        </>
+                      <div className="flex items-center gap-2 text-green-600">
+                        <Check className="w-5 h-5" />
+                        <span className="font-medium">
+                          {importStatus.results.success || importStatus.results.added || 0} items imported successfully
+                        </span>
+                      </div>
+
+                      {importStatus.results.skipped > 0 && (
+                        <div className="text-gray-600">
+                          {importStatus.results.skipped} duplicates skipped
+                        </div>
                       )}
 
-                      {/* Import results */}
-                      {!importStatus.isExport && (
-                        <>
-                          <div className="flex items-center gap-2 text-green-600">
-                            <Check className="w-5 h-5" />
-                            <span className="font-medium">
-                              {importStatus.results.success || 0} items imported successfully
-                            </span>
+                      {importStatus.results.errors && importStatus.results.errors.length > 0 && (
+                        <div className="mt-3">
+                          <div className="text-red-600 font-medium mb-2">
+                            {importStatus.results.errors.length} errors:
                           </div>
-
-                          {importStatus.results.skipped > 0 && (
-                            <div className="text-gray-600">
-                              {importStatus.results.skipped} duplicates skipped
-                            </div>
-                          )}
-
-                          {importStatus.results.errors && importStatus.results.errors.length > 0 && (
-                            <div className="mt-3">
-                              <div className="text-red-600 font-medium mb-2">
-                                {importStatus.results.errors.length} errors:
+                          <div className="max-h-40 overflow-y-auto text-sm bg-red-50 p-3 rounded-lg">
+                            {importStatus.results.errors.slice(0, 10).map((err, idx) => (
+                              <div key={idx} className="text-red-700 mb-1">
+                                Row {err.row}: {Array.isArray(err.errors) ? err.errors.join(', ') : err.error}
                               </div>
-                              <div className="max-h-40 overflow-y-auto text-sm bg-red-50 p-3 rounded-lg">
-                                {importStatus.results.errors.slice(0, 10).map((err, idx) => (
-                                  <div key={idx} className="text-red-700 mb-1">
-                                    Row {err.row}: {Array.isArray(err.errors) ? err.errors.join(', ') : err.error}
-                                  </div>
-                                ))}
-                                {importStatus.results.errors.length > 10 && (
-                                  <div className="text-red-500 mt-2">
-                                    ...and {importStatus.results.errors.length - 10} more errors
-                                  </div>
-                                )}
+                            ))}
+                            {importStatus.results.errors.length > 10 && (
+                              <div className="text-red-500 mt-2">
+                                ...and {importStatus.results.errors.length - 10} more errors
                               </div>
-                            </div>
-                          )}
-                        </>
+                            )}
+                          </div>
+                        </div>
                       )}
 
                       <button
-                        onClick={() => setImportStatus({ show: false, type: '', results: null, isExport: false })}
+                        onClick={() => setImportStatus({ show: false, type: '', results: null })}
                         className="w-full mt-4 px-4 py-2 rounded-lg text-white font-medium"
                         style={{ backgroundColor: COLORS.primary }}
                       >
