@@ -132,9 +132,24 @@ async def import_responses(
 
     results = {
         'success': 0,
+        'skipped': 0,
         'errors': [],
         'mode': mode
     }
+
+    # Build set of existing entries for duplicate detection
+    # Key: (function_id, team_id, method_type, capability_id, description)
+    existing_entries = set()
+    if mode == 'append':
+        for r in crud.get_responses():
+            key = (
+                r.get('function_id'),
+                r.get('team_id'),
+                r.get('method_type', '').lower(),
+                r.get('capability_id'),
+                r.get('description', '').strip().lower()
+            )
+            existing_entries.add(key)
 
     rows_to_import = []
 
@@ -203,6 +218,14 @@ async def import_responses(
         if errors:
             results['errors'].append({'row': row_num, 'errors': errors})
             continue
+
+        # Check for duplicates (in append mode)
+        if mode == 'append':
+            dup_key = (function_id, team_id, method_type, capability_id, description.lower())
+            if dup_key in existing_entries:
+                results['skipped'] += 1
+                continue
+            existing_entries.add(dup_key)  # Prevent duplicates within the import file too
 
         # Build response data
         response_data = {
