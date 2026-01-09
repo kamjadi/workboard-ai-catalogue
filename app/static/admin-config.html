@@ -571,38 +571,33 @@
               </div>
 
               <div className="p-6 space-y-6">
-                {/* Export Entries */}
+                {/* Entries */}
                 <div>
-                  <h4 className="font-medium text-gray-900 mb-3">Export Entries (AI Usage Submissions)</h4>
-                  <button
-                    onClick={handleExportEntries}
-                    className="inline-flex items-center gap-2 px-4 py-2 rounded-lg text-white font-medium hover:opacity-90 transition-opacity"
-                    style={{ backgroundColor: COLORS.primary }}
-                  >
-                    <Download className="w-4 h-4" />
-                    Export All Entries to JSON
-                  </button>
-                </div>
-
-                {/* Import Entries */}
-                <div>
-                  <h4 className="font-medium text-gray-900 mb-3">Import Entries</h4>
-                  <input
-                    ref={entriesFileRef}
-                    type="file"
-                    accept=".json"
-                    onChange={(e) => handleImportEntries(e, 'append')}
-                    className="hidden"
-                    id="entries-file-input"
-                  />
-                  <label
-                    htmlFor="entries-file-input"
-                    className={`inline-flex items-center gap-2 px-4 py-2 rounded-lg border border-gray-300 text-gray-700 font-medium hover:bg-gray-50 transition-colors cursor-pointer ${importing ? 'opacity-50 pointer-events-none' : ''}`}
-                  >
-                    <Upload className="w-4 h-4" />
-                    {importing ? 'Importing...' : 'Select JSON File to Import'}
-                  </label>
-                  <p className="mt-2 text-sm text-gray-500">Appends entries from the JSON file to existing data.</p>
+                  <h4 className="font-medium text-gray-900 mb-3">Entries (AI Usage Submissions)</h4>
+                  <div className="flex flex-wrap gap-3">
+                    <button
+                      onClick={handleExportEntries}
+                      className="inline-flex items-center gap-2 px-3 py-1.5 rounded-lg border border-gray-300 text-gray-700 text-sm font-medium hover:bg-gray-50 transition-colors"
+                    >
+                      <Download className="w-3.5 h-3.5" />
+                      Export Entries
+                    </button>
+                    <input
+                      ref={entriesFileRef}
+                      type="file"
+                      accept=".json"
+                      onChange={(e) => handleImportEntries(e, 'append')}
+                      className="hidden"
+                      id="entries-file-input"
+                    />
+                    <label
+                      htmlFor="entries-file-input"
+                      className={`inline-flex items-center gap-2 px-3 py-1.5 rounded-lg border border-gray-300 text-gray-700 text-sm font-medium hover:bg-gray-50 transition-colors cursor-pointer ${importing ? 'opacity-50 pointer-events-none' : ''}`}
+                    >
+                      <Upload className="w-3.5 h-3.5" />
+                      {importing ? 'Importing...' : 'Import Entries'}
+                    </label>
+                  </div>
                 </div>
 
                 <hr className="border-gray-200" />
@@ -611,14 +606,14 @@
                 <div>
                   <h4 className="font-medium text-gray-900 mb-3">Export Configuration</h4>
                   <div className="flex flex-wrap gap-3">
-                    {['functions', 'teams', 'tools', 'capabilities'].map(type => (
+                    {['Functions', 'Teams', 'Tools', 'Capabilities'].map(type => (
                       <button
                         key={type}
-                        onClick={() => handleExportConfig(type)}
+                        onClick={() => handleExportConfig(type.toLowerCase())}
                         className="inline-flex items-center gap-2 px-3 py-1.5 rounded-lg border border-gray-300 text-gray-700 text-sm font-medium hover:bg-gray-50 transition-colors"
                       >
                         <Download className="w-3.5 h-3.5" />
-                        {type.charAt(0).toUpperCase() + type.slice(1)}
+                        Export {type}
                       </button>
                     ))}
                   </div>
@@ -627,31 +622,27 @@
                 {/* Import Config */}
                 <div>
                   <h4 className="font-medium text-gray-900 mb-3">Import Configuration</h4>
-                  <div className="space-y-3">
-                    {['functions', 'teams', 'tools', 'capabilities'].map(type => (
-                      <div key={type} className="flex items-center gap-3">
-                        <span className="w-24 text-sm font-medium text-gray-700">{type.charAt(0).toUpperCase() + type.slice(1)}:</span>
+                  <div className="flex flex-wrap gap-3">
+                    {['Functions', 'Teams', 'Tools', 'Capabilities'].map(type => (
+                      <div key={type}>
                         <input
-                          ref={configFileRefs[type]}
+                          ref={configFileRefs[type.toLowerCase()]}
                           type="file"
                           accept=".json"
-                          onChange={(e) => handleImportConfig(type, e, 'merge')}
+                          onChange={(e) => handleImportConfig(type.toLowerCase(), e, 'merge')}
                           className="hidden"
-                          id={`config-file-input-${type}`}
+                          id={`config-file-input-${type.toLowerCase()}`}
                         />
                         <label
-                          htmlFor={`config-file-input-${type}`}
+                          htmlFor={`config-file-input-${type.toLowerCase()}`}
                           className={`inline-flex items-center gap-2 px-3 py-1.5 rounded-lg border border-gray-300 text-gray-700 text-sm font-medium hover:bg-gray-50 transition-colors cursor-pointer ${importing ? 'opacity-50 pointer-events-none' : ''}`}
                         >
                           <Upload className="w-3.5 h-3.5" />
-                          Select JSON
+                          Import {type}
                         </label>
                       </div>
                     ))}
                   </div>
-                  <p className="mt-3 text-sm text-gray-500">
-                    Imports merge with existing data. Duplicates are skipped.
-                  </p>
                 </div>
               </div>
             </div>
