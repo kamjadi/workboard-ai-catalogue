@@ -278,6 +278,17 @@ async def reset_user_password(user_id: int, request: ResetPasswordRequest, sessi
     return {"success": True, "message": "Password reset successfully"}
 
 
+@router.post("/users/{user_id}/unlock")
+async def unlock_user_account(user_id: int, session: dict = Depends(require_admin)):
+    """Unlock a user's account (admin only)."""
+    user = crud.get_user(user_id)
+    if not user:
+        raise HTTPException(status_code=404, detail="User not found")
+
+    crud.unlock_user(user_id)
+    return {"success": True, "message": "Account unlocked successfully"}
+
+
 @router.post("/users/bulk")
 async def create_users_bulk(request: BulkUserRequest, session: dict = Depends(require_admin)):
     """Create multiple users at once (admin only)."""

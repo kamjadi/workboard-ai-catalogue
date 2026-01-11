@@ -1045,13 +1045,33 @@ def update_user(user_id: int, username: str = None, role: str = None, active: bo
 
 
 def update_user_password(user_id: int, password_hash: str, must_change: bool = False) -> bool:
-    """Update a user's password."""
+    """Update a user's password. Also clears any account lockout."""
     conn = get_db_connection()
     cursor = conn.cursor()
     cursor.execute("""
-        UPDATE users SET password_hash = ?, must_change_password = ?
+        UPDATE users SET
+            password_hash = ?,
+            must_change_password = ?,
+            failed_login_attempts = 0,
+            locked_until = NULL
         WHERE id = ?
     """, (password_hash, 1 if must_change else 0, user_id))
+    conn.commit()
+    updated = cursor.rowcount > 0
+    conn.close()
+    return updated
+
+
+def unlock_user(user_id: int) -> bool:
+    """Unlock a user account by clearing failed attempts and lockout."""
+    conn = get_db_connection()
+    cursor = conn.cursor()
+    cursor.execute("""
+        UPDATE users SET
+            failed_login_attempts = 0,
+            locked_until = NULL
+        WHERE id = ?
+    """, (user_id,))
     conn.commit()
     updated = cursor.rowcount > 0
     conn.close()
