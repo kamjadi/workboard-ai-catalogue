@@ -147,13 +147,34 @@
             method_type: entry.method_type,
             capability_id: entry.capability_id,
             description: entry.description || '',
-            // Keep impact fields as null if not set (don't convert to empty string)
+            // Impact 1
             impact1_type: entry.impact1_type || null,
             impact1_value: entry.impact1_value || null,
             impact1_frequency: entry.impact1_frequency || null,
             impact1_time_unit: entry.impact1_time_unit || null,
             impact1_annual_value: entry.impact1_annual_value || null,
-            impact1_description: entry.impact1_description || ''
+            impact1_description: entry.impact1_description || '',
+            // Impact 2
+            impact2_type: entry.impact2_type || null,
+            impact2_value: entry.impact2_value || null,
+            impact2_frequency: entry.impact2_frequency || null,
+            impact2_time_unit: entry.impact2_time_unit || null,
+            impact2_annual_value: entry.impact2_annual_value || null,
+            impact2_description: entry.impact2_description || '',
+            // Impact 3
+            impact3_type: entry.impact3_type || null,
+            impact3_value: entry.impact3_value || null,
+            impact3_frequency: entry.impact3_frequency || null,
+            impact3_time_unit: entry.impact3_time_unit || null,
+            impact3_annual_value: entry.impact3_annual_value || null,
+            impact3_description: entry.impact3_description || '',
+            // Impact 4
+            impact4_type: entry.impact4_type || null,
+            impact4_value: entry.impact4_value || null,
+            impact4_frequency: entry.impact4_frequency || null,
+            impact4_time_unit: entry.impact4_time_unit || null,
+            impact4_annual_value: entry.impact4_annual_value || null,
+            impact4_description: entry.impact4_description || ''
           });
         }
       }, [entry]);
@@ -335,84 +356,103 @@
                 />
               </div>
 
-              {/* Primary Impact */}
+              {/* Impact Sections */}
               {formData.method_type !== 'experiment' && (
-                <div className="border border-gray-200 rounded-xl p-4">
-                  <h4 className="font-medium text-gray-900 mb-3">Primary Impact</h4>
-                  <div className="grid sm:grid-cols-2 gap-4">
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-1">Impact Type</label>
-                      <div className="relative">
-                        <select
-                          value={formData.impact1_type || ''}
-                          onChange={(e) => handleChange('impact1_type', e.target.value || null)}
-                          className="w-full appearance-none bg-white border border-gray-300 rounded-lg px-4 py-2.5 text-gray-900 focus:outline-none focus:ring-2"
-                        >
-                          <option value="">Select type...</option>
-                          <option value="cost_savings">Cost Savings</option>
-                          <option value="time_savings">Time Savings</option>
-                          <option value="quality">Quality Improvement</option>
-                          <option value="new_capability">New Capability</option>
-                        </select>
-                        <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 pointer-events-none" />
-                      </div>
-                    </div>
-                    {(formData.impact1_type === 'cost_savings' || formData.impact1_type === 'time_savings') && (
-                      <>
-                        <div>
-                          <label className="block text-sm font-medium text-gray-700 mb-1">
-                            {formData.impact1_type === 'cost_savings' ? 'Amount ($)' : 'Hours'}
-                          </label>
-                          <input
-                            type="number"
-                            value={formData.impact1_value || ''}
-                            onChange={(e) => handleChange('impact1_value', parseFloat(e.target.value) || '')}
-                            onKeyDown={(e) => { if (e.key === 'Enter' && !saving) handleSave(); }}
-                            className="w-full bg-white border border-gray-300 rounded-lg px-4 py-2.5 text-gray-900 focus:outline-none focus:ring-2"
-                          />
-                        </div>
-                        <div>
-                          <label className="block text-sm font-medium text-gray-700 mb-1">Frequency</label>
-                          <div className="relative">
-                            <select
-                              value={formData.impact1_frequency || ''}
-                              onChange={(e) => handleChange('impact1_frequency', e.target.value || null)}
-                              className="w-full appearance-none bg-white border border-gray-300 rounded-lg px-4 py-2.5 text-gray-900 focus:outline-none focus:ring-2"
-                            >
-                              <option value="">Select frequency...</option>
-                              <option value="one_time">One-time</option>
-                              <option value="daily">Daily</option>
-                              <option value="weekly">Weekly</option>
-                              <option value="monthly">Monthly</option>
-                            </select>
-                            <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 pointer-events-none" />
+                <div className="space-y-4">
+                  {/* Impact Section Component */}
+                  {[1, 2, 3, 4].map(num => {
+                    const prefix = `impact${num}`;
+                    const typeField = `${prefix}_type`;
+                    const valueField = `${prefix}_value`;
+                    const freqField = `${prefix}_frequency`;
+                    const annualField = `${prefix}_annual_value`;
+                    const descField = `${prefix}_description`;
+                    const impactType = formData[typeField];
+
+                    return (
+                      <div key={num} className="border border-gray-200 rounded-xl p-4">
+                        <h4 className="font-medium text-gray-900 mb-3">
+                          {num === 1 ? 'Primary Impact' : `Additional Impact ${num - 1}`}
+                          {num > 1 && <span className="text-gray-400 font-normal ml-2">(Optional)</span>}
+                        </h4>
+                        <div className="grid sm:grid-cols-2 gap-4">
+                          <div>
+                            <label className="block text-sm font-medium text-gray-700 mb-1">Impact Type</label>
+                            <div className="relative">
+                              <select
+                                value={impactType || ''}
+                                onChange={(e) => handleChange(typeField, e.target.value || null)}
+                                className="w-full appearance-none bg-white border border-gray-300 rounded-lg px-4 py-2.5 text-gray-900 focus:outline-none focus:ring-2"
+                              >
+                                <option value="">{num === 1 ? 'Select type...' : 'None'}</option>
+                                <option value="cost_savings">Cost Savings</option>
+                                <option value="time_savings">Time Savings</option>
+                                <option value="quality">Quality Improvement</option>
+                                <option value="new_capability">New Capability</option>
+                              </select>
+                              <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 pointer-events-none" />
+                            </div>
                           </div>
+                          {(impactType === 'cost_savings' || impactType === 'time_savings') && (
+                            <>
+                              <div>
+                                <label className="block text-sm font-medium text-gray-700 mb-1">
+                                  {impactType === 'cost_savings' ? 'Amount ($)' : 'Hours'}
+                                </label>
+                                <input
+                                  type="number"
+                                  value={formData[valueField] || ''}
+                                  onChange={(e) => handleChange(valueField, parseFloat(e.target.value) || '')}
+                                  onKeyDown={(e) => { if (e.key === 'Enter' && !saving) handleSave(); }}
+                                  className="w-full bg-white border border-gray-300 rounded-lg px-4 py-2.5 text-gray-900 focus:outline-none focus:ring-2"
+                                />
+                              </div>
+                              <div>
+                                <label className="block text-sm font-medium text-gray-700 mb-1">Frequency</label>
+                                <div className="relative">
+                                  <select
+                                    value={formData[freqField] || ''}
+                                    onChange={(e) => handleChange(freqField, e.target.value || null)}
+                                    className="w-full appearance-none bg-white border border-gray-300 rounded-lg px-4 py-2.5 text-gray-900 focus:outline-none focus:ring-2"
+                                  >
+                                    <option value="">Select frequency...</option>
+                                    <option value="one_time">One-time</option>
+                                    <option value="daily">Daily</option>
+                                    <option value="weekly">Weekly</option>
+                                    <option value="monthly">Monthly</option>
+                                    <option value="quarterly">Quarterly</option>
+                                  </select>
+                                  <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 pointer-events-none" />
+                                </div>
+                              </div>
+                              <div>
+                                <label className="block text-sm font-medium text-gray-700 mb-1">Annual Value</label>
+                                <input
+                                  type="number"
+                                  value={formData[annualField] || ''}
+                                  onChange={(e) => handleChange(annualField, parseFloat(e.target.value) || '')}
+                                  onKeyDown={(e) => { if (e.key === 'Enter' && !saving) handleSave(); }}
+                                  className="w-full bg-white border border-gray-300 rounded-lg px-4 py-2.5 text-gray-900 focus:outline-none focus:ring-2"
+                                />
+                              </div>
+                            </>
+                          )}
+                          {(impactType === 'quality' || impactType === 'new_capability') && (
+                            <div className="sm:col-span-2">
+                              <label className="block text-sm font-medium text-gray-700 mb-1">Description</label>
+                              <input
+                                type="text"
+                                value={formData[descField] || ''}
+                                onChange={(e) => handleChange(descField, e.target.value)}
+                                onKeyDown={(e) => { if (e.key === 'Enter' && !saving) handleSave(); }}
+                                className="w-full bg-white border border-gray-300 rounded-lg px-4 py-2.5 text-gray-900 focus:outline-none focus:ring-2"
+                              />
+                            </div>
+                          )}
                         </div>
-                        <div>
-                          <label className="block text-sm font-medium text-gray-700 mb-1">Annual Value</label>
-                          <input
-                            type="number"
-                            value={formData.impact1_annual_value || ''}
-                            onChange={(e) => handleChange('impact1_annual_value', parseFloat(e.target.value) || '')}
-                            onKeyDown={(e) => { if (e.key === 'Enter' && !saving) handleSave(); }}
-                            className="w-full bg-white border border-gray-300 rounded-lg px-4 py-2.5 text-gray-900 focus:outline-none focus:ring-2"
-                          />
-                        </div>
-                      </>
-                    )}
-                    {(formData.impact1_type === 'quality' || formData.impact1_type === 'new_capability') && (
-                      <div className="sm:col-span-2">
-                        <label className="block text-sm font-medium text-gray-700 mb-1">Description</label>
-                        <input
-                          type="text"
-                          value={formData.impact1_description || ''}
-                          onChange={(e) => handleChange('impact1_description', e.target.value)}
-                          onKeyDown={(e) => { if (e.key === 'Enter' && !saving) handleSave(); }}
-                          className="w-full bg-white border border-gray-300 rounded-lg px-4 py-2.5 text-gray-900 focus:outline-none focus:ring-2"
-                        />
                       </div>
-                    )}
-                  </div>
+                    );
+                  })}
                 </div>
               )}
 
