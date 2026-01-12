@@ -236,6 +236,89 @@ def delete_team(team_id: int) -> bool:
     return deleted
 
 
+def get_team_entry_count(team_id: int) -> Optional[dict]:
+    """Get team info with entry count and sibling teams."""
+    conn = get_db_connection()
+    cursor = conn.cursor()
+
+    # Get team info with entry count
+    cursor.execute("""
+        SELECT t.id, t.name, t.function_id, f.name as function_name,
+               (SELECT COUNT(*) FROM responses WHERE team_id = t.id) as entry_count
+        FROM teams t
+        JOIN functions f ON t.function_id = f.id
+        WHERE t.id = ?
+    """, (team_id,))
+    row = cursor.fetchone()
+
+    if not row:
+        conn.close()
+        return None
+
+    result = {
+        'id': row[0],
+        'name': row[1],
+        'function_id': row[2],
+        'function_name': row[3],
+        'entry_count': row[4],
+        'sibling_teams': []
+    }
+
+    # Get sibling teams (other teams in same function)
+    cursor.execute("""
+        SELECT id, name FROM teams
+        WHERE function_id = ? AND id != ? AND active = 1
+        ORDER BY name
+    """, (result['function_id'], team_id))
+    result['sibling_teams'] = [{'id': r[0], 'name': r[1]} for r in cursor.fetchall()]
+
+    conn.close()
+    return result
+
+
+def move_team_entries_and_delete(team_id: int, target_team_id: Optional[int]) -> dict:
+    """Move all entries from one team to another (or to function level) and delete the team."""
+    conn = get_db_connection()
+    cursor = conn.cursor()
+
+    # Verify source team exists
+    cursor.execute("SELECT id, name, function_id FROM teams WHERE id = ?", (team_id,))
+    source_team = cursor.fetchone()
+    if not source_team:
+        conn.close()
+        return {'success': False, 'error': 'Source team not found'}
+
+    # Get target name for response
+    if target_team_id is None:
+        cursor.execute("SELECT name FROM functions WHERE id = ?", (source_team[2],))
+        func_row = cursor.fetchone()
+        target_name = f"{func_row[0]} (no team)" if func_row else "Function (no team)"
+    else:
+        cursor.execute("SELECT name FROM teams WHERE id = ?", (target_team_id,))
+        target_row = cursor.fetchone()
+        if not target_row:
+            conn.close()
+            return {'success': False, 'error': 'Target team not found'}
+        target_name = target_row[0]
+
+    # Move entries
+    cursor.execute("UPDATE responses SET team_id = ? WHERE team_id = ?", (target_team_id, team_id))
+    moved_count = cursor.rowcount
+
+    # Delete the team
+    cursor.execute("DELETE FROM teams WHERE id = ?", (team_id,))
+
+    conn.commit()
+    conn.close()
+
+    return {
+        'success': True,
+        'moved_count': moved_count,
+        'target': target_name,
+        'deleted_team': source_team[1]
+    }
+
+
 def update_tool(tool_id: int, name: str) -> Optional[dict]:
     conn = get_db_connection()
     cursor = conn.cursor()

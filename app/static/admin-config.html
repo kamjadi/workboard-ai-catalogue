@@ -68,6 +68,8 @@
     const Download = ({ className }) => <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>;
     const Upload = ({ className }) => <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>;
     const Check = ({ className }) => <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><polyline points="20 6 9 17 4 12"/></svg>;
+    const ArrowRight = ({ className }) => <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg>;
+    const MoveRight = ({ className }) => <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M18 8L22 12L18 16"/><path d="M2 12H22"/></svg>;
 
     // WorkBoard Color Palette
     const COLORS = {
@@ -128,6 +130,151 @@
                 Delete
               </button>
             </div>
+          </div>
+        </div>
+      );
+    }
+
+    // Team Delete Modal with Move Entries option
+    function TeamDeleteModal({ isOpen, onClose, onDelete, onMoveAndDelete, team, teamInfo, loading }) {
+      const [targetTeamId, setTargetTeamId] = useState('function');
+      const [processing, setProcessing] = useState(false);
+
+      useEffect(() => {
+        setTargetTeamId('function');
+      }, [isOpen, team]);
+
+      if (!isOpen || !team) return null;
+
+      const hasEntries = teamInfo && teamInfo.entry_count > 0;
+
+      const handleMoveAndDelete = async () => {
+        setProcessing(true);
+        try {
+          const target = targetTeamId === 'function' ? null : parseInt(targetTeamId);
+          await onMoveAndDelete(team.id, target);
+          onClose();
+        } catch (err) {
+          // Error handled by parent
+        } finally {
+          setProcessing(false);
+        }
+      };
+
+      const handleDelete = async () => {
+        setProcessing(true);
+        try {
+          await onDelete(team.id);
+          onClose();
+        } catch (err) {
+          // Error handled by parent
+        } finally {
+          setProcessing(false);
+        }
+      };
+
+      return (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-2xl shadow-xl max-w-lg w-full p-6">
+            <div className="flex items-center gap-3 mb-4">
+              <div className={`w-12 h-12 rounded-full flex items-center justify-center ${hasEntries ? 'bg-amber-100' : 'bg-red-100'}`}>
+                {hasEntries ? <MoveRight className="w-6 h-6 text-amber-600" /> : <AlertTriangle className="w-6 h-6 text-red-600" />}
+              </div>
+              <div>
+                <h3 className="text-lg font-semibold text-gray-900">
+                  {hasEntries ? 'Move Entries & Delete Team' : 'Delete Team'}
+                </h3>
+                <p className="text-sm text-gray-500">
+                  {hasEntries ? `This team has ${teamInfo.entry_count} entries` : 'This action cannot be undone'}
+                </p>
+              </div>
+            </div>
+
+            {loading ? (
+              <div className="py-8 text-center text-gray-500">Loading team info...</div>
+            ) : hasEntries ? (
+              <>
+                <p className="text-gray-600 mb-4">
+                  Before deleting <span className="font-semibold">"{team.name}"</span>, you must move its {teamInfo.entry_count} {teamInfo.entry_count === 1 ? 'entry' : 'entries'} to another location.
+                </p>
+
+                <div className="mb-4">
+                  <label className="block text-sm font-medium text-gray-700 mb-2">Move entries to:</label>
+                  <div className="relative">
+                    <select
+                      value={targetTeamId}
+                      onChange={(e) => setTargetTeamId(e.target.value)}
+                      className="w-full appearance-none bg-white border border-gray-300 rounded-lg px-4 py-2.5 text-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    >
+                      <option value="function">{teamInfo.function_name} (no team)</option>
+                      {teamInfo.sibling_teams.map(t => (
+                        <option key={t.id} value={t.id}>{t.name}</option>
+                      ))}
+                    </select>
+                    <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 pointer-events-none" />
+                  </div>
+                </div>
+
+                <div className="bg-gray-50 rounded-lg p-3 mb-4">
+                  <div className="flex items-center gap-2 text-sm text-gray-600">
+                    <span className="font-medium">{team.name}</span>
+                    <ArrowRight className="w-4 h-4" />
+                    <span className="font-medium text-gray-900">
+                      {targetTeamId === 'function' ? `${teamInfo.function_name} (no team)` : teamInfo.sibling_teams.find(t => t.id === parseInt(targetTeamId))?.name}
+                    </span>
+                  </div>
+                  <p className="text-xs text-gray-500 mt-1">
+                    {teamInfo.entry_count} {teamInfo.entry_count === 1 ? 'entry' : 'entries'} will be moved, then the team will be deleted.
+                  </p>
+                </div>
+
+                <div className="flex gap-3 justify-end">
+                  <button
+                    onClick={onClose}
+                    disabled={processing}
+                    className="px-4 py-2 rounded-lg border border-gray-300 text-gray-700 font-medium hover:bg-gray-50 disabled:opacity-50"
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    onClick={handleMoveAndDelete}
+                    disabled={processing}
+                    className="px-4 py-2 rounded-lg text-white font-medium hover:opacity-90 disabled:opacity-50 flex items-center gap-2"
+                    style={{ backgroundColor: COLORS.warning }}
+                  >
+                    {processing ? 'Processing...' : (
+                      <>
+                        <MoveRight className="w-4 h-4" />
+                        Move & Delete
+                      </>
+                    )}
+                  </button>
+                </div>
+              </>
+            ) : (
+              <>
+                <p className="text-gray-600 mb-4">
+                  Are you sure you want to delete <span className="font-semibold">"{team.name}"</span>?
+                </p>
+                <div className="flex gap-3 justify-end">
+                  <button
+                    onClick={onClose}
+                    disabled={processing}
+                    className="px-4 py-2 rounded-lg border border-gray-300 text-gray-700 font-medium hover:bg-gray-50 disabled:opacity-50"
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    onClick={handleDelete}
+                    disabled={processing}
+                    className="px-4 py-2 rounded-lg text-white font-medium hover:opacity-90 disabled:opacity-50"
+                    style={{ backgroundColor: COLORS.danger }}
+                  >
+                    {processing ? 'Deleting...' : 'Delete'}
+                  </button>
+                </div>
+              </>
+            )}
           </div>
         </div>
       );
@@ -319,6 +466,9 @@
       // Modal states
       const [editModal, setEditModal] = useState({ open: false, item: null, type: null });
       const [deleteModal, setDeleteModal] = useState({ open: false, item: null, type: null });
+      const [teamDeleteModal, setTeamDeleteModal] = useState({ open: false, team: null });
+      const [teamInfo, setTeamInfo] = useState(null);
+      const [teamInfoLoading, setTeamInfoLoading] = useState(false);
       const [error, setError] = useState(null);
       const [currentUser, setCurrentUser] = useState(null);
 
@@ -390,6 +540,49 @@
         }
         await fetchConfig();
         setDeleteModal({ open: false, item: null, type: null });
+      };
+
+      // Team-specific delete handlers
+      const handleTeamDeleteClick = async (team) => {
+        setTeamDeleteModal({ open: true, team });
+        setTeamInfo(null);
+        setTeamInfoLoading(true);
+        try {
+          const res = await fetch(`/api/config/teams/${team.id}/entries`);
+          if (res.ok) {
+            const data = await res.json();
+            setTeamInfo(data);
+          }
+        } catch (err) {
+          setError('Failed to load team info');
+        } finally {
+          setTeamInfoLoading(false);
+        }
+      };
+
+      const handleTeamDelete = async (teamId) => {
+        const response = await fetch(`/api/config/teams/${teamId}`, { method: 'DELETE' });
+        if (!response.ok) {
+          const err = await response.json();
+          throw new Error(err.detail || 'Failed to delete');
+        }
+        await fetchConfig();
+        setTeamDeleteModal({ open: false, team: null });
+      };
+
+      const handleTeamMoveAndDelete = async (teamId, targetTeamId) => {
+        const response = await fetch(`/api/config/teams/${teamId}/move-and-delete`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ target_team_id: targetTeamId })
+        });
+        if (!response.ok) {
+          const err = await response.json();
+          setError(err.detail || 'Failed to move and delete');
+          throw new Error(err.detail || 'Failed to move and delete');
+        }
+        await fetchConfig();
+        setTeamDeleteModal({ open: false, team: null });
       };
 
       // Export handlers - browser download
@@ -577,7 +770,13 @@
               functions={config.functions}
               onAdd={() => setEditModal({ open: true, item: null, type: activeTab })}
               onEdit={(item) => setEditModal({ open: true, item, type: activeTab })}
-              onDelete={(item) => setDeleteModal({ open: true, item, type: activeTab })}
+              onDelete={(item) => {
+                if (activeTab === 'teams') {
+                  handleTeamDeleteClick(item);
+                } else {
+                  setDeleteModal({ open: true, item, type: activeTab });
+                }
+              }}
             />
 
             {/* Notes for specific tabs */}
@@ -762,7 +961,7 @@
             functions={config.functions}
           />
 
-          {/* Delete Modal */}
+          {/* Delete Modal (for non-teams) */}
           <DeleteModal
             isOpen={deleteModal.open}
             onClose={() => setDeleteModal({ open: false, item: null, type: null })}
@@ -776,7 +975,18 @@
             }}
             itemName={deleteModal.item?.name}
             warning={deleteModal.type === 'functions' ? 'Functions with teams cannot be deleted.' :
-                    deleteModal.type === 'teams' || deleteModal.type === 'capabilities' ? 'Items referenced by responses cannot be deleted.' : null}
+                    deleteModal.type === 'capabilities' ? 'Items referenced by responses cannot be deleted.' : null}
+          />
+
+          {/* Team Delete Modal (with move entries option) */}
+          <TeamDeleteModal
+            isOpen={teamDeleteModal.open}
+            onClose={() => setTeamDeleteModal({ open: false, team: null })}
+            onDelete={handleTeamDelete}
+            onMoveAndDelete={handleTeamMoveAndDelete}
+            team={teamDeleteModal.team}
+            teamInfo={teamInfo}
+            loading={teamInfoLoading}
           />
         </div>
       );

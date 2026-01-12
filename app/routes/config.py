@@ -25,6 +25,10 @@ class TeamUpdate(BaseModel):
     function_id: int
 
 
+class MoveEntriesRequest(BaseModel):
+    target_team_id: Optional[int] = None  # None means move to function level (no team)
+
+
 @router.get("", response_model=ConfigData)
 async def get_all_config():
     """Get all configuration data (functions, teams, tools, capabilities)."""
@@ -98,6 +102,24 @@ async def delete_team(team_id: int):
     if not deleted:
         raise HTTPException(status_code=400, detail="Cannot delete: team has responses")
     return {"message": "Team deleted"}
+
+
+@router.get("/teams/{team_id}/entries")
+async def get_team_entries_info(team_id: int):
+    """Get team entry count and sibling teams for move operation."""
+    result = crud.get_team_entry_count(team_id)
+    if not result:
+        raise HTTPException(status_code=404, detail="Team not found")
+    return result
+
+
+@router.post("/teams/{team_id}/move-and-delete")
+async def move_entries_and_delete_team(team_id: int, request: MoveEntriesRequest):
+    """Move all entries to another team (or function level) and delete the team."""
+    result = crud.move_team_entries_and_delete(team_id, request.target_team_id)
+    if not result.get('success'):
+        raise HTTPException(status_code=400, detail=result.get('error', 'Operation failed'))
+    return result
 
 
 # ============ Tools CRUD ============
