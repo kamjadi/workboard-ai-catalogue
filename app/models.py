@@ -22,6 +22,7 @@ class Frequency(str, Enum):
     daily = "daily"
     weekly = "weekly"
     monthly = "monthly"
+    quarterly = "quarterly"
 
 
 # Config Models

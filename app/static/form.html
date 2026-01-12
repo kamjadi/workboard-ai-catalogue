@@ -129,7 +129,8 @@
         { id: "one_time", label: "One-time" },
         { id: "daily", label: "Daily" },
         { id: "weekly", label: "Weekly" },
-        { id: "monthly", label: "Monthly" }
+        { id: "monthly", label: "Monthly" },
+        { id: "quarterly", label: "Quarterly" }
       ],
       timeUnits: [
         { id: "hrs_day", label: "hours per day" },
@@ -185,15 +186,15 @@
       
       const calculateAnnualValue = () => {
         if (impact.type === 'cost_savings' && impact.dollarsSaved && impact.frequency) {
-          const multiplier = { one_time: 1, daily: 260, weekly: 52, monthly: 12 }[impact.frequency] || 1;
+          const multiplier = { one_time: 1, daily: 260, weekly: 52, monthly: 12, quarterly: 4 }[impact.frequency] || 1;
           return parseFloat(impact.dollarsSaved) * multiplier;
         }
         if (impact.type === 'time_savings' && impact.hoursSaved && impact.timeUnit && impact.frequency) {
           let annualHours = parseFloat(impact.hoursSaved);
-          const freqMult = { one_time: 1, daily: 260, weekly: 52, monthly: 12 }[impact.frequency] || 1;
-          if (impact.timeUnit === 'hrs_day') annualHours *= (impact.frequency === 'daily' ? 260 : impact.frequency === 'weekly' ? 5 * 52 : 22 * 12);
-          else if (impact.timeUnit === 'hrs_week') annualHours *= (impact.frequency === 'daily' ? 260/5 : impact.frequency === 'weekly' ? 52 : 4.33 * 12);
-          else if (impact.timeUnit === 'hrs_month') annualHours *= (impact.frequency === 'daily' ? 260/22 : impact.frequency === 'weekly' ? 52/4.33 : 12);
+          const freqMult = { one_time: 1, daily: 260, weekly: 52, monthly: 12, quarterly: 4 }[impact.frequency] || 1;
+          if (impact.timeUnit === 'hrs_day') annualHours *= (impact.frequency === 'daily' ? 260 : impact.frequency === 'weekly' ? 5 * 52 : impact.frequency === 'monthly' ? 22 * 12 : impact.frequency === 'quarterly' ? 22 * 3 * 4 : 1);
+          else if (impact.timeUnit === 'hrs_week') annualHours *= (impact.frequency === 'daily' ? 260/5 : impact.frequency === 'weekly' ? 52 : impact.frequency === 'monthly' ? 4.33 * 12 : impact.frequency === 'quarterly' ? 13 * 4 : 1);
+          else if (impact.timeUnit === 'hrs_month') annualHours *= (impact.frequency === 'daily' ? 260/22 : impact.frequency === 'weekly' ? 52/4.33 : impact.frequency === 'monthly' ? 12 : impact.frequency === 'quarterly' ? 3 * 4 : 1);
           else annualHours *= freqMult;
           return annualHours;
         }
@@ -385,19 +386,27 @@
         if (impact.type === 'cost_savings') {
           data[prefix + '_value'] = parseFloat(impact.dollarsSaved) || 0;
           data[prefix + '_frequency'] = impact.frequency || null;
-          const multiplier = { one_time: 1, daily: 260, weekly: 52, monthly: 12 }[impact.frequency] || 1;
+          const multiplier = { one_time: 1, daily: 260, weekly: 52, monthly: 12, quarterly: 4 }[impact.frequency] || 1;
           data[prefix + '_annual_value'] = (parseFloat(impact.dollarsSaved) || 0) * multiplier;
         } else if (impact.type === 'time_savings') {
           data[prefix + '_value'] = parseFloat(impact.hoursSaved) || 0;
           data[prefix + '_time_unit'] = impact.timeUnit || null;
           data[prefix + '_frequency'] = impact.frequency || null;
-          // Calculate annual hours
+          // Calculate annual hours based on time unit and frequency
           let annualHours = parseFloat(impact.hoursSaved) || 0;
-          if (impact.timeUnit === 'hrs_day') annualHours *= 260;
-          else if (impact.timeUnit === 'hrs_week') annualHours *= 52;
-          else if (impact.timeUnit === 'hrs_month') annualHours *= 12;
-          const freqMultiplier = { one_time: 1, daily: 1, weekly: 1, monthly: 1 }[impact.frequency] || 1;
-          data[prefix + '_annual_value'] = annualHours * freqMultiplier;
+          const freq = impact.frequency;
+          if (impact.timeUnit === 'hrs_day') {
+            annualHours *= (freq === 'daily' ? 260 : freq === 'weekly' ? 5 * 52 : freq === 'monthly' ? 22 * 12 : freq === 'quarterly' ? 22 * 3 * 4 : 1);
+          } else if (impact.timeUnit === 'hrs_week') {
+            annualHours *= (freq === 'daily' ? 260/5 : freq === 'weekly' ? 52 : freq === 'monthly' ? 4.33 * 12 : freq === 'quarterly' ? 13 * 4 : 1);
+          } else if (impact.timeUnit === 'hrs_month') {
+            annualHours *= (freq === 'daily' ? 260/22 : freq === 'weekly' ? 52/4.33 : freq === 'monthly' ? 12 : freq === 'quarterly' ? 3 * 4 : 1);
+          } else {
+            // hrs_occurrence - multiply by frequency
+            const freqMultiplier = { one_time: 1, daily: 260, weekly: 52, monthly: 12, quarterly: 4 }[freq] || 1;
+            annualHours *= freqMultiplier;
+          }
+          data[prefix + '_annual_value'] = annualHours;
         } else {
           data[prefix + '_description'] = impact.description || '';
         }
