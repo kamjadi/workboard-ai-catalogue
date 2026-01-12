@@ -181,9 +181,14 @@
     }
 
     // Impact Section Component
-    function ImpactSection({ title, isPrimary, impact, onChange }) {
+    function ImpactSection({ title, isPrimary, impact, onChange, usedTypes = [] }) {
       const handleChange = (field, value) => onChange({ ...impact, [field]: value });
-      
+
+      // Filter out already-used types (except the current selection)
+      const availableTypes = CONFIG.impactTypes.filter(
+        type => !usedTypes.includes(type.id) || type.id === impact.type
+      );
+
       const calculateAnnualValue = () => {
         if (impact.type === 'cost_savings' && impact.dollarsSaved && impact.frequency) {
           const multiplier = { one_time: 1, daily: 260, weekly: 52, monthly: 12, quarterly: 4 }[impact.frequency] || 1;
@@ -211,8 +216,8 @@
             <label className="block text-sm font-medium text-gray-700">Impact Type {isPrimary && <span className="text-red-500">*</span>}</label>
             <div className="relative">
               <select value={impact.type} onChange={(e) => handleChange('type', e.target.value)} className="w-full appearance-none bg-white border border-gray-300 rounded-lg px-4 py-3 text-gray-900 focus:outline-none focus:ring-2 focus:border-transparent cursor-pointer" style={{ focusRing: COLORS.primary }} required={isPrimary}>
-                <option value="">Select impact type...</option>
-                {CONFIG.impactTypes.map(type => <option key={type.id} value={type.id}>{type.label}</option>)}
+                <option value="">{isPrimary ? 'Select impact type...' : 'None'}</option>
+                {availableTypes.map(type => <option key={type.id} value={type.id}>{type.label}</option>)}
               </select>
               <ChevronDown className="absolute right-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400 pointer-events-none" />
             </div>
@@ -855,10 +860,34 @@
                     Impact
                   </h2>
                   <div className="space-y-4">
-                    <ImpactSection title="Primary Impact" isPrimary={true} impact={primaryImpact} onChange={setPrimaryImpact} />
-                    <ImpactSection title="Secondary Impact (Optional)" isPrimary={false} impact={secondaryImpact} onChange={setSecondaryImpact} />
-                    <ImpactSection title="Third Impact (Optional)" isPrimary={false} impact={tertiaryImpact} onChange={setTertiaryImpact} />
-                    <ImpactSection title="Fourth Impact (Optional)" isPrimary={false} impact={quaternaryImpact} onChange={setQuaternaryImpact} />
+                    <ImpactSection
+                      title="Primary Impact"
+                      isPrimary={true}
+                      impact={primaryImpact}
+                      onChange={setPrimaryImpact}
+                      usedTypes={[secondaryImpact.type, tertiaryImpact.type, quaternaryImpact.type].filter(t => t)}
+                    />
+                    <ImpactSection
+                      title="Secondary Impact (Optional)"
+                      isPrimary={false}
+                      impact={secondaryImpact}
+                      onChange={setSecondaryImpact}
+                      usedTypes={[primaryImpact.type, tertiaryImpact.type, quaternaryImpact.type].filter(t => t)}
+                    />
+                    <ImpactSection
+                      title="Third Impact (Optional)"
+                      isPrimary={false}
+                      impact={tertiaryImpact}
+                      onChange={setTertiaryImpact}
+                      usedTypes={[primaryImpact.type, secondaryImpact.type, quaternaryImpact.type].filter(t => t)}
+                    />
+                    <ImpactSection
+                      title="Fourth Impact (Optional)"
+                      isPrimary={false}
+                      impact={quaternaryImpact}
+                      onChange={setQuaternaryImpact}
+                      usedTypes={[primaryImpact.type, secondaryImpact.type, tertiaryImpact.type].filter(t => t)}
+                    />
                   </div>
                 </div>
               )}

@@ -318,22 +318,47 @@
     // Generic Horizontal Bar Chart
     function HorizontalBarChart({ data, title, subtitle, dataKey, formatter, color }) {
       const max = Math.max(...data.map(d => d[dataKey]));
+
+      // Calculate bar width with better distinction between zero and non-zero
+      const getBarWidth = (value) => {
+        if (value === 0 || !value) {
+          // Zero values get a minimal width just for the text
+          return '12%';
+        }
+        // Non-zero values: minimum 25% width, scales up to 100%
+        // This ensures non-zero is always visibly larger than zero
+        const percentage = (value / max) * 100;
+        return Math.max(percentage, 25) + '%';
+      };
+
       return (
         <div className="bg-white rounded-2xl border border-gray-200 p-6 shadow-sm">
           <h3 className="text-lg font-semibold text-gray-900">{title}</h3>
           {subtitle && <p className="text-gray-400 text-xs mt-0.5 mb-4">{subtitle}</p>}
           {!subtitle && <div className="mb-4"></div>}
           <div className="space-y-3">
-            {data.map((item, idx) => (
-              <div key={idx} className="flex items-center gap-3">
-                <div className="w-28 text-sm text-gray-700 truncate font-medium">{item.function}</div>
-                <div className="flex-1 flex items-center gap-2">
-                  <div className="h-7 rounded flex items-center px-3" style={{ width: Math.max((item[dataKey] / max) * 100, 18) + '%', backgroundColor: color }}>
-                    <span className="text-white text-xs font-bold">{formatter ? formatter(item[dataKey]) : item[dataKey]}</span>
+            {data.map((item, idx) => {
+              const value = item[dataKey];
+              const isZero = value === 0 || !value;
+              return (
+                <div key={idx} className="flex items-center gap-3">
+                  <div className="w-28 text-sm text-gray-700 truncate font-medium">{item.function}</div>
+                  <div className="flex-1 flex items-center gap-2">
+                    <div
+                      className="h-7 rounded flex items-center px-3"
+                      style={{
+                        width: getBarWidth(value),
+                        backgroundColor: isZero ? color + '40' : color
+                      }}
+                    >
+                      <span className={`text-xs font-bold ${isZero ? 'text-gray-600' : 'text-white'}`}>
+                        {formatter ? formatter(value) : value}
+                      </span>
+                    </div>
                   </div>
                 </div>
-              </div>
-            ))}
+              );
+            })}
           </div>
         </div>
       );
