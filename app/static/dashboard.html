@@ -495,27 +495,48 @@
           <div className="space-y-3">
             {data.map((item, idx) => {
               const total = item.workflows + item.tasks + item.experiments;
+              const isAllZero = total === 0;
+
+              // For all-zero case, show a minimal faded bar
+              if (isAllZero) {
+                return (
+                  <div key={idx} className="flex items-center gap-3">
+                    <div className="w-28 text-sm text-gray-700 truncate font-medium">{item.function}</div>
+                    <div className="flex-1 flex items-center">
+                      <div className="flex h-7 rounded overflow-hidden" style={{ width: '10%', backgroundColor: COLORS.slate + '30' }}>
+                        <span className="w-full flex items-center justify-center text-gray-500 text-xs font-bold">0</span>
+                      </div>
+                      <span className="ml-2 text-gray-400 text-sm font-medium">0</span>
+                    </div>
+                  </div>
+                );
+              }
+
               return (
                 <div key={idx} className="flex items-center gap-3">
                   <div className="w-28 text-sm text-gray-700 truncate font-medium">{item.function}</div>
                   <div className="flex-1 flex items-center">
-                    <div className="flex h-7 rounded overflow-hidden" style={{ width: Math.max((total / max) * 100, 15) + '%' }}>
-                      <div
-                        className="h-full flex items-center justify-center cursor-pointer hover:opacity-80 transition-opacity"
-                        style={{ width: (item.workflows / total * 100) + '%', backgroundColor: COLORS.secondary }}
-                        onClick={() => onSegmentClick && onSegmentClick(item.function, item.functionId, 'workflow')}
-                        title={`Click to view ${item.function} Workflows`}
-                      >
-                        <span className="text-white text-xs font-bold pointer-events-none">{item.workflows}</span>
-                      </div>
-                      <div
-                        className="h-full flex items-center justify-center cursor-pointer hover:opacity-80 transition-opacity"
-                        style={{ width: (item.tasks / total * 100) + '%', backgroundColor: COLORS.primary }}
-                        onClick={() => onSegmentClick && onSegmentClick(item.function, item.functionId, 'task')}
-                        title={`Click to view ${item.function} Tasks`}
-                      >
-                        <span className="text-white text-xs font-bold pointer-events-none">{item.tasks}</span>
-                      </div>
+                    <div className="flex h-7 rounded overflow-hidden" style={{ width: Math.max((total / max) * 100, 20) + '%' }}>
+                      {item.workflows > 0 && (
+                        <div
+                          className="h-full flex items-center justify-center cursor-pointer hover:opacity-80 transition-opacity"
+                          style={{ width: (item.workflows / total * 100) + '%', backgroundColor: COLORS.secondary }}
+                          onClick={() => onSegmentClick && onSegmentClick(item.function, item.functionId, 'workflow')}
+                          title={`Click to view ${item.function} Workflows`}
+                        >
+                          <span className="text-white text-xs font-bold pointer-events-none">{item.workflows}</span>
+                        </div>
+                      )}
+                      {item.tasks > 0 && (
+                        <div
+                          className="h-full flex items-center justify-center cursor-pointer hover:opacity-80 transition-opacity"
+                          style={{ width: (item.tasks / total * 100) + '%', backgroundColor: COLORS.primary }}
+                          onClick={() => onSegmentClick && onSegmentClick(item.function, item.functionId, 'task')}
+                          title={`Click to view ${item.function} Tasks`}
+                        >
+                          <span className="text-white text-xs font-bold pointer-events-none">{item.tasks}</span>
+                        </div>
+                      )}
                       {item.experiments > 0 && (
                         <div
                           className="h-full flex items-center justify-center cursor-pointer hover:opacity-80 transition-opacity"
