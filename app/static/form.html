@@ -469,7 +469,10 @@
 
               if (!createCapRes.ok) {
                 const errData = await createCapRes.json();
-                throw new Error(errData.detail || 'Failed to create capability: ' + capName);
+                const errorMsg = typeof errData.detail === 'string' ? errData.detail :
+                  errData.detail?.msg || errData.detail?.message ||
+                  (errData.detail ? JSON.stringify(errData.detail) : 'Failed to create capability: ' + capName);
+                throw new Error(errorMsg);
               }
 
               const newCap = await createCapRes.json();
@@ -511,7 +514,10 @@
 
               if (!createRes.ok) {
                 const errData = await createRes.json();
-                throw new Error(errData.detail || 'Failed to create tool: ' + toolToCreate.name);
+                const errorMsg = typeof errData.detail === 'string' ? errData.detail :
+                  errData.detail?.msg || errData.detail?.message ||
+                  (errData.detail ? JSON.stringify(errData.detail) : 'Failed to create tool: ' + toolToCreate.name);
+                throw new Error(errorMsg);
               }
 
               const newTool = await createRes.json();
@@ -561,7 +567,10 @@
 
           if (!response.ok) {
             const errData = await response.json();
-            throw new Error(errData.detail || 'Failed to submit');
+            const errorMsg = typeof errData.detail === 'string' ? errData.detail :
+              errData.detail?.msg || errData.detail?.message ||
+              (errData.detail ? JSON.stringify(errData.detail) : 'Failed to submit');
+            throw new Error(errorMsg);
           }
 
           setSubmitted(true);
