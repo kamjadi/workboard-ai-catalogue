@@ -295,8 +295,11 @@
             if (errData.detail) {
               if (Array.isArray(errData.detail)) {
                 errorMsg = errData.detail.map(e => e.msg || e.message || JSON.stringify(e)).join(', ');
-              } else {
+              } else if (typeof errData.detail === 'string') {
                 errorMsg = errData.detail;
+              } else {
+                // Handle object errors to avoid "[object Object]" display
+                errorMsg = errData.detail.msg || errData.detail.message || JSON.stringify(errData.detail);
               }
             }
             throw new Error(errorMsg);
